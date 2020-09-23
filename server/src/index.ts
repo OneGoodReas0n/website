@@ -7,8 +7,12 @@ import session from "express-session";
 import Redis from "ioredis";
 import connectRedis from "connect-redis";
 import { createConnection } from "typeorm";
+import { ApolloServer } from "apollo-server-express";
+import { buildSchema } from "type-graphql";
+import { Context } from "./types";
 
 import { __prod__ } from "./consts";
+import HelloResolver from "./resolvers/hello";
 
 const PORT = process.env.PORT;
 
@@ -18,6 +22,9 @@ const PORT = process.env.PORT;
   const connection = await createConnection({
     type: "postgres",
     url: process.env.DATBASE_URL,
+    username: "postgres",
+    password: "postgres",
+    database: "portfolio",
     logging: true,
     entities: [],
     migrations: [path.join(__dirname, "./migrations/*")],
@@ -31,8 +38,8 @@ const PORT = process.env.PORT;
   app.use(
     session({
       name: "uid",
-      store: new RedisStore({ client: redisClient, disableTouch: true }),
       secret: process.env.SECRET,
+      store: new RedisStore({ client: redisClient, disableTouch: true }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7 day
         httpOnly: true,
@@ -45,7 +52,22 @@ const PORT = process.env.PORT;
     })
   );
 
+  const apolloServer = new ApolloServer({
+    schema: await buildSchema({
+      resolvers: [HelloResolver],
+      validate: true,
+    }),
+    context: ({ req, res }: Context): Context => ({
+      req,
+      res,
+    }),
+  });
+
+  apolloServer.applyMiddleware({ app });
+
   app.listen(parseInt(PORT), () => {
     console.log("Server started on localhost:", PORT);
   });
-})();
+})().catch((err) => {
+  console.log(err);
+});
