@@ -5,16 +5,18 @@ import express from "express";
 import session from "express-session";
 import Redis from "ioredis";
 import "reflect-metadata";
-import { createConnection } from "typeorm";
-import { __prod__ } from "./consts";
+import { __prod__, COOKIE_NAME } from "./consts";
 import { createApolloServer } from "./utils/createApolloServer";
+import { createORMConnection } from "./utils/createORMConnection";
 
 const PORT = process.env.PORT;
 
 (async () => {
   const app = express();
 
-  const connection = await createConnection();
+  const conn = await createORMConnection();
+  // await conn.undoLastMigration();
+  // await conn.runMigrations();
 
   let RedisStore = connectRedis(session);
   let redisClient = new Redis(process.env.REDIS_URL);
@@ -23,7 +25,7 @@ const PORT = process.env.PORT;
 
   app.use(
     session({
-      name: "uid",
+      name: COOKIE_NAME,
       secret: process.env.SECRET,
       store: new RedisStore({ client: redisClient, disableTouch: true }),
       cookie: {
