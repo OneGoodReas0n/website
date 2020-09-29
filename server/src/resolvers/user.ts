@@ -1,34 +1,30 @@
+import argon from "argon2";
 import {
-  Resolver,
-  Query,
-  Mutation,
   Arg,
-  ObjectType,
-  Field,
   Ctx,
+  Mutation,
+  ObjectType,
+  Query,
+  Resolver,
+  Field,
+  InputType,
 } from "type-graphql";
+import {} from "uuid";
 import User from "../entities/User";
 import { Context } from "../types";
-import {} from "uuid";
-import argon from "argon2";
-import { validateLogin, Errors, errorsMap } from "../utils/validator";
+import { Errors, errorsMap, validateUser } from "../utils/validator";
+import { GenericResponse } from "./types";
+import { COOKIE_NAME } from "../consts";
 
 @ObjectType()
-export class FieldError {
-  @Field()
-  name: string;
-  @Field()
-  field: string;
-  @Field()
-  message: string;
-}
+class UserResponse extends GenericResponse(User) {}
 
-@ObjectType()
-export class UserResponse {
-  @Field(() => [FieldError], { nullable: true })
-  errors?: FieldError[];
-  @Field(() => User, { nullable: true })
-  user?: User;
+@InputType()
+export class UserInput {
+  @Field()
+  email: string;
+  @Field()
+  password: string;
 }
 
 @Resolver(User)
@@ -44,21 +40,20 @@ export default class UserResolver {
 
   @Mutation(() => UserResponse)
   async login(
-    @Arg("email") email: string,
-    @Arg("password") password: string,
+    @Arg("input") input: UserInput,
     @Ctx() { req }: Context
   ): Promise<UserResponse> {
-    const errors = validateLogin(email, password);
+    const errors = validateUser(input);
     if (errors.length > 0) {
-      return { errors };
+      return { errors: errors };
     }
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({ where: { email: input.email } });
     if (!user) {
       return {
         errors: [errorsMap().get(Errors.INVALID_CREDENTIALS)!],
       };
     }
-    const valid = await argon.verify(user.password, password);
+    const valid = await argon.verify(user.password, input.password);
     if (!valid) {
       return {
         errors: [errorsMap().get(Errors.INVALID_CREDENTIALS)!],
@@ -68,23 +63,36 @@ export default class UserResolver {
     process.env.NODE_ENV !== "test" ? (req.session.userId = user.id) : "";
 
     return {
-      user,
+      entity: user,
     };
+  }
+
+  @Mutation(() => Boolean)
+  async logout(@Ctx() { req, res }: Context): Promise<Boolean> {
+    return new Promise((resolve) =>
+      req.session.destroy((err) => {
+        res.clearCookie(COOKIE_NAME);
+        if (err) {
+          resolve(false);
+          return;
+        }
+        resolve(true);
+      })
+    );
   }
 
   @Mutation(() => UserResponse)
   async register(
-    @Arg("email") email: string,
-    @Arg("password") password: string,
+    @Arg("input") input: UserInput,
     @Ctx() { req }: Context
   ): Promise<UserResponse> {
-    const errors = validateLogin(email, password);
+    const errors = validateUser(input);
     if (errors.length > 0) {
       return { errors };
     }
 
-    const hashedPassword = await argon.hash(password);
-    const currentUser = await User.findOne({ where: { email } });
+    const hashedPassword = await argon.hash(input.password);
+    const currentUser = await User.findOne({ where: { email: input.email } });
 
     if (currentUser) {
       return {
@@ -92,11 +100,14 @@ export default class UserResolver {
       };
     }
 
-    const user = await User.create({ email, password: hashedPassword }).save();
+    const user = await User.create({
+      email: input.email,
+      password: hashedPassword,
+    }).save();
 
     process.env.NODE_ENV !== "test" ? (req.session.userId = user.id) : "";
     return {
-      user,
+      entity: user,
     };
   }
 }
