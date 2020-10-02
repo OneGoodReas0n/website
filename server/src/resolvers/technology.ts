@@ -96,7 +96,6 @@ export default class TechnologyResolver {
     }
     if (technology.name !== input.name) {
       technology.name = input.name;
-      tech = await Technology.save(technology);
     }
 
     if (technology.picture.publicLink !== input.picturePath) {
@@ -104,7 +103,8 @@ export default class TechnologyResolver {
         publicLink: input.picturePath,
       });
     }
-    return { entity: tech.id ? tech : undefined };
+    tech = await Technology.save(technology);
+    return { entity: tech };
   }
 
   @UseMiddleware(isAuth)
