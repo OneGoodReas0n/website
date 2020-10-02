@@ -174,17 +174,6 @@ export const validateProject = (input: ProjectInput): FieldError[] => {
     errors.push(errorsMap().get(Errors.PROJECT_NAME_IS_EMPTY)!);
   }
 
-  if (!input.pictureUrl) {
-    errors.push(errorsMap().get(Errors.PROJECT_PICTURE_IS_EMPTY)!);
-  } else if (
-    input.pictureUrl &&
-    !input.pictureUrl.match(
-      /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gm
-    )
-  ) {
-    errors.push(errorsMap().get(Errors.PROJECT_PICTURE_PATH_INVALID)!);
-  }
-
   if (!input.status) {
     errors.push(errorsMap().get(Errors.PROJECT_STATUS_IS_UNDEFINED)!);
   }

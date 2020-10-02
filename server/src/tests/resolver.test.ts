@@ -1,22 +1,24 @@
 import { ApolloServer } from "apollo-server-express";
-import { GraphQLResponse } from "apollo-server-types";
 import {
   ApolloServerTestClient,
   createTestClient,
 } from "apollo-server-testing";
+import { GraphQLResponse } from "apollo-server-types";
+import { DocumentNode } from "graphql";
+import { getConnection } from "typeorm";
 import User from "../entities/User";
+import { UserInput } from "../resolvers/user";
 import { createApolloServer } from "../utils/createApolloServer";
 import { createApolloTestServerWithSession } from "../utils/createApolloTestServerWithSession";
-import {
-  closeConnection,
-  createORMConnection,
-} from "../utils/createORMConnection";
+import { createORMConnection } from "../utils/createORMConnection";
 import { Errors, errorsMap } from "../utils/validator";
-import { getConnection } from "typeorm";
 import Technology from "../entities/Technology";
-import { UserInput } from "src/resolvers/user";
-import { TechInput } from "src/resolvers/technology";
-import { create } from "domain";
+import { ProjectInput } from "../resolvers/project";
+import { TechInput } from "../resolvers/technology";
+import Project from "../entities/Project";
+import Picture from "../entities/Picture";
+
+type StringOrAst = string | DocumentNode;
 
 let apolloServer: ApolloServer;
 let testClient: ApolloServerTestClient;
@@ -48,6 +50,7 @@ export const loginMutation = `
          }
       }
    }`;
+
 export const meQuery = `
    query meQuery {
       me {
@@ -98,31 +101,107 @@ const deleteTechMutation = `
     delete(id: $id)
   }`;
 
-const mutateRegister = async (
+const getProjectsQuery = `
+  query getProjects{
+    getProjects{
+      name
+      description
+      status
+      pictures{
+        publicLink
+      }
+      technologies{
+        name
+      }
+    }
+  }
+`;
+
+const getProjectQuery = `
+  query getProject($id: Float!){
+    getProject(id: $id){
+      name
+      description
+      status
+      pictures{
+        publicLink
+      }
+      technologies{
+        name
+      }
+    }
+  }
+`;
+
+const createProjectMutation = `
+  mutation CreateProjectMutation($name: String!, $description: String, $status: String!, $pictureUrls: [String!], $technologyNames: [String!]){
+    createProject(input:{name:$name, description:$description, status: $status, pictureUrls:$pictureUrls, technologyNames:$technologyNames}){
+      errors{
+        name
+        field
+        message
+      }
+      entity{
+        name
+        description
+        status
+        pictures{
+          publicLink
+        }
+        technologies{
+          name
+        }
+      }
+    }
+}
+`;
+
+const updateProjectMutation = `
+  mutation UpdateProjectMutation($id: Float!, $name: String!, $description: String, $status: String!, $pictureUrls: [String!], $technologyNames: [String!]){
+    updateProject(id:$id,input:{name:$name, description:$description, status: $status, pictureUrls:$pictureUrls, technologyNames:$technologyNames}){
+      errors{
+        name
+        field
+        message
+      }
+      entity{
+        name
+        description
+        status
+        pictures{
+          publicLink
+        }
+        technologies{
+          name
+        }
+      }
+    }
+  }
+`;
+
+const deleteProjectMutation = `
+  mutation DeleteProjectMutation($id: Float!){
+    deleteProject(id:$id)
+  }
+`;
+
+export const mutate = async (
   input: UserInput,
+  mutation: StringOrAst,
   client: ApolloServerTestClient = testClient
 ): Promise<GraphQLResponse> => {
   return client.mutate({
-    mutation: registerMutation,
+    mutation,
     variables: input,
   });
 };
 
-const mutateLogin = async (
-  input: UserInput,
-  client: ApolloServerTestClient = testClient
-): Promise<GraphQLResponse> => {
-  return client.mutate({
-    mutation: loginMutation,
-    variables: input,
-  });
-};
-
-const queryMe = async (
+export const query = async (
+  query: StringOrAst,
   client: ApolloServerTestClient = testClient
 ): Promise<GraphQLResponse> => {
   return client.query({
-    query: meQuery,
+    query,
   });
 };
 
@@ -172,70 +251,166 @@ const clearSession = async () => {
   testClient = createTestClient(apolloServer);
 };
 
-const checkIfUserAuthorized = async () => {
+export const checkIfUserAuthorized = async () => {
   const testUser: UserInput = {
     email: "ben@ben.com",
     password: "123Benben",
   };
 
-  await mutateRegister(testUser);
+  await mutate(testUser, registerMutation);
   const user = await User.findOne({ where: { email: testUser.email } });
   apolloServer = await createApolloTestServerWithSession(user?.id!);
   testClient = createTestClient(apolloServer);
 
-  const meResult = await queryMe(testClient);
+  const meResult = await query(meQuery, testClient);
   expect(meResult.data?.me).toEqual({ email: user?.email });
+};
+
+const queryGetProjects = async (
+  client: ApolloServerTestClient = testClient
+): Promise<GraphQLResponse> => {
+  return client.query({
+    query: getProjectsQuery,
+  });
+};
+
+const queryGetProject = async (
+  id: number,
+  client: ApolloServerTestClient = testClient
+): Promise<GraphQLResponse> => {
+  return client.query({
+    query: getProjectQuery,
+    variables: { id },
+  });
+};
+
+const mutateCreateProject = async (
+  input: ProjectInput,
+  client: ApolloServerTestClient = testClient
+): Promise<GraphQLResponse> => {
+  return client.mutate({
+    mutation: createProjectMutation,
+    variables: input,
+  });
+};
+
+const mutateUpdateProject = async (
+  id: number,
+  input: ProjectInput,
+  client: ApolloServerTestClient = testClient
+): Promise<GraphQLResponse> => {
+  return client.mutate({
+    mutation: updateProjectMutation,
+    variables: { id, ...input },
+  });
+};
+
+const mutateDeleteProject = async (
+  id: number,
+  client: ApolloServerTestClient = testClient
+): Promise<GraphQLResponse> => {
+  return client.mutate({
+    mutation: deleteProjectMutation,
+    variables: { id },
+  });
+};
+
+const clearPictures = async () => {
+  const pictures = await Picture.find();
+  const promises = pictures.map((p) => {
+    return new Promise(async (resolve) => {
+      p.project = new Project();
+      await p.save();
+      await Picture.remove(p);
+      resolve(true);
+    });
+  });
+  await Promise.all(promises);
+};
+
+const clearTechnologies = async () => {
+  const technologies = await Technology.find();
+  const promises = technologies.map(async (t) => {
+    return new Promise(async (resolve) => {
+      await Technology.remove(t);
+      resolve(true);
+    });
+  });
+  await Promise.all(promises);
+};
+
+const clearProjects = async () => {
+  const projects = await Project.find();
+  const promises = projects.map((p) => {
+    return new Promise(async (resolve) => {
+      await Project.remove(p);
+      resolve(p);
+    });
+  });
+  await Promise.all(promises);
+};
+
+const createOneTechnology = async (input: TechInput): Promise<Technology> => {
+  const result = await mutateCreateTech(input);
+  expect(result.data?.create.entity).toEqual({ name: input.name });
+
+  const tech = await Technology.findOne({
+    where: { name: input.name },
+  });
+  expect(tech).toBeDefined();
+  return tech!;
 };
 
 beforeAll(async () => {
   await createORMConnection();
-  await getConnection().runMigrations();
   apolloServer = await createApolloServer();
   testClient = createTestClient(apolloServer);
 });
 
-afterEach(async () => {
+beforeEach(async () => {
   await User.clear();
-  await Technology.clear();
+  await clearTechnologies();
+  await clearProjects();
+  await clearPictures();
 });
 
 afterAll(async () => {
-  await closeConnection();
+  await getConnection().close();
 });
 
-describe("Apollo UserResolver testing", () => {
+describe("UserResolver testing", () => {
   describe("mutation register() ", () => {
     it("Error: password is not long enough", async () => {
       const testUser: UserInput = { email: "ben@ben.com", password: "123" };
-      const result = await mutateRegister(testUser);
+      const result = await mutate(testUser, registerMutation);
       expect(result.data?.register.errors).toEqual([
         errorsMap().get(Errors.PASSWORD_EMPTY),
       ]);
     });
     it("Error: password is not valid", async () => {
       const testUser: UserInput = { email: "ben@ben.com", password: "ben123" };
-      const result = await mutateRegister(testUser);
+      const result = await mutate(testUser, registerMutation);
       expect(result.data?.register.errors).toEqual([
         errorsMap().get(Errors.PASSWORD_INVALID),
       ]);
     });
     it("Error: email is empty", async () => {
       const testUser: UserInput = { email: "", password: "Ben123ben" };
-      const result = await mutateRegister(testUser);
+      const result = await mutate(testUser, registerMutation);
       expect(result.data?.register.errors).toEqual([
         errorsMap().get(Errors.EMAIL_EMPTY),
       ]);
     });
     it("Error: email is not valid", async () => {
       const testUser: UserInput = { email: "ben.com", password: "Ben123ben" };
-      const result = await mutateRegister(testUser);
+      const result = await mutate(testUser, registerMutation);
       expect(result.data?.register.errors).toEqual([
         errorsMap().get(Errors.EMAIL_INVALID),
       ]);
     });
     it("Error: email is empty, password is empty", async () => {
       const testUser: UserInput = { email: "", password: "" };
-      const result = await mutateRegister(testUser);
+      const result = await mutate(testUser, registerMutation);
       expect(result.data?.register.errors).toEqual([
         errorsMap().get(Errors.EMAIL_EMPTY),
         errorsMap().get(Errors.PASSWORD_EMPTY),
@@ -243,7 +418,7 @@ describe("Apollo UserResolver testing", () => {
     });
     it("Error: email is invalid, password is invalid", async () => {
       const testUser: UserInput = { email: "ben.com", password: "Benben" };
-      const result = await mutateRegister(testUser);
+      const result = await mutate(testUser, registerMutation);
       expect(result.data?.register.errors).toEqual([
         errorsMap().get(Errors.EMAIL_INVALID),
         errorsMap().get(Errors.PASSWORD_INVALID),
@@ -255,9 +430,8 @@ describe("Apollo UserResolver testing", () => {
         email: "ben@ben.com",
         password: "Ben123ben",
       };
-      const result = await mutateRegister(testUser);
+      const result = await mutate(testUser, registerMutation);
       expect(result.data?.register.entity).toEqual({ email: testUser.email });
-
       const user = await User.findOne({ where: { email: testUser.email } });
       expect(user).toBeDefined();
     });
@@ -267,9 +441,9 @@ describe("Apollo UserResolver testing", () => {
         email: "ben@ben.com",
         password: "123Benben",
       };
-      const result = await mutateRegister(testUser);
+      const result = await mutate(testUser, registerMutation);
       expect(result.data?.register.entity).toEqual({ email: testUser.email });
-      const sameEmailResult = await mutateRegister(testUser);
+      const sameEmailResult = await mutate(testUser, registerMutation);
       expect(sameEmailResult.data?.register.errors).toEqual([
         errorsMap().get(Errors.EMAIL_IN_USE),
       ]);
@@ -278,21 +452,21 @@ describe("Apollo UserResolver testing", () => {
   describe("mutation login()", () => {
     it("Error: email is empty", async () => {
       const testUser: UserInput = { email: "", password: "123Benben" };
-      const result = await mutateLogin(testUser);
+      const result = await mutate(testUser, loginMutation);
       expect(result.data?.login.errors).toEqual([
         errorsMap().get(Errors.EMAIL_EMPTY),
       ]);
     });
     it("Error: email is invalid", async () => {
       const testUser: UserInput = { email: "ben.com", password: "123Benben" };
-      const result = await mutateLogin(testUser);
+      const result = await mutate(testUser, loginMutation);
       expect(result.data?.login.errors).toEqual([
         errorsMap().get(Errors.EMAIL_INVALID),
       ]);
     });
     it("Error: password is empty", async () => {
       const testUser: UserInput = { email: "ben@ben.com", password: "" };
-      const result = await mutateLogin(testUser);
+      const result = await mutate(testUser, loginMutation);
       expect(result.data?.login.errors).toEqual([
         errorsMap().get(Errors.PASSWORD_EMPTY),
       ]);
@@ -302,7 +476,7 @@ describe("Apollo UserResolver testing", () => {
         email: "ben@ben.com",
         password: "123Benben",
       };
-      const registerResult = await mutateRegister(testUser);
+      const registerResult = await mutate(testUser, registerMutation);
       expect(registerResult.data?.register.entity).toEqual({
         email: testUser.email,
       });
@@ -310,10 +484,10 @@ describe("Apollo UserResolver testing", () => {
         await User.findOne({ where: { email: testUser.email } })
       ).toBeDefined();
 
-      const loginResult = await mutateLogin({
-        email: testUser.email,
-        password: "123Ben123",
-      });
+      const loginResult = await mutate(
+        { email: testUser.email, password: "123Ben123" },
+        loginMutation
+      );
       expect(loginResult.data?.login.errors).toEqual([
         errorsMap().get(Errors.INVALID_CREDENTIALS),
       ]);
@@ -323,7 +497,7 @@ describe("Apollo UserResolver testing", () => {
         email: "ben@ben.com",
         password: "123Benben",
       };
-      const registerResult = await mutateRegister(testUser);
+      const registerResult = await mutate(testUser, registerMutation);
       expect(registerResult.data?.register.entity).toEqual({
         email: testUser.email,
       });
@@ -331,10 +505,13 @@ describe("Apollo UserResolver testing", () => {
         await User.findOne({ where: { email: testUser.email } })
       ).toBeDefined();
 
-      const loginResult = await mutateLogin({
-        email: "ben1@ben.com",
-        password: testUser.password,
-      });
+      const loginResult = await mutate(
+        {
+          email: "ben1@ben.com",
+          password: testUser.password,
+        },
+        loginMutation
+      );
       expect(loginResult.data?.login.errors).toEqual([
         errorsMap().get(Errors.INVALID_CREDENTIALS),
       ]);
@@ -342,7 +519,7 @@ describe("Apollo UserResolver testing", () => {
   });
   describe("query me()", () => {
     it("Error: sessionId is undefined", async () => {
-      const result = await queryMe();
+      const result = await query(meQuery);
       expect(result.data?.me).toEqual(null);
     });
     it("Error: no such user with sessionId", async () => {
@@ -350,7 +527,7 @@ describe("Apollo UserResolver testing", () => {
       const testClientWithSession = await createTestClient(
         await createApolloTestServerWithSession(id)
       );
-      const result = await queryMe(testClientWithSession);
+      const result = await query(meQuery, testClientWithSession);
       expect(result.data?.me).toEqual(null);
     });
     it("Success: user got by session userId", async () => {
@@ -358,7 +535,7 @@ describe("Apollo UserResolver testing", () => {
         email: "ben@ben.com",
         password: "ben123Ben",
       };
-      const registerResult = await mutateRegister(testUser);
+      const registerResult = await mutate(testUser, registerMutation);
       expect(registerResult.data?.register.entity).toEqual({
         email: testUser.email,
       });
@@ -366,13 +543,13 @@ describe("Apollo UserResolver testing", () => {
       const testClientWithSession = await createTestClient(
         await createApolloTestServerWithSession(user?.id!)
       );
-      const result = await queryMe(testClientWithSession);
+      const result = await query(meQuery, testClientWithSession);
       expect(result.data?.me).toEqual({ email: user?.email });
     });
   });
 });
 
-describe("Apollo TechResolver testing", () => {
+describe("TechResolver testing", () => {
   describe("mutation create() ", () => {
     it("Error: name is undefined", async () => {
       await checkIfUserAuthorized();
@@ -430,7 +607,6 @@ describe("Apollo TechResolver testing", () => {
       await clearSession();
     });
   });
-
   describe("mutation getOne() ", () => {
     it("Error: no such technology", async () => {
       await checkIfUserAuthorized();
@@ -438,8 +614,6 @@ describe("Apollo TechResolver testing", () => {
         name: "React",
         picturePath: "http://picture.com/1",
       };
-      const createResult = await mutateCreateTech(testTech);
-      expect(createResult.data?.create.entity).toEqual({ name: testTech.name });
       const getResult = await mutateGetOneTech({
         name: "Graphql",
         picturePath: testTech.picturePath,
@@ -456,13 +630,14 @@ describe("Apollo TechResolver testing", () => {
       };
 
       const createResult = await mutateCreateTech(testTech);
-      expect(createResult.data?.create.entity).toEqual({ name: testTech.name });
+      expect(createResult.data?.create.entity).toEqual({
+        name: testTech.name,
+      });
       const tech = await Technology.findOne({
         where: { name: testTech.name },
         relations: ["picture"],
       });
       expect(tech).toBeDefined();
-
       const getResult = await testClient.mutate({
         mutation: getOneTechMutation,
         variables: { name: tech?.name },
@@ -478,7 +653,10 @@ describe("Apollo TechResolver testing", () => {
   describe("mutation update() ", () => {
     it("Error: technology name cannot be null", async () => {
       await checkIfUserAuthorized();
-      const testEntity = { name: "React", picturePath: "http://picture.com/1" };
+      const testEntity = {
+        name: "React",
+        picturePath: "http://picture.com/1",
+      };
       const createResult = await mutateCreateTech(testEntity);
       expect(createResult.data?.create.entity).toEqual({
         name: testEntity.name,
@@ -500,18 +678,11 @@ describe("Apollo TechResolver testing", () => {
 
     it("Success: technology name is updated", async () => {
       await checkIfUserAuthorized();
-
-      const testEntity = { name: "React", picturePath: "http://picture.com/1" };
-
-      const result = await mutateCreateTech(testEntity);
-      expect(result.data?.create.entity).toEqual({ name: testEntity.name });
-
-      const tech = await Technology.findOne({
-        where: { name: testEntity.name },
-        relations: ["picture"],
-      });
-      expect(tech).toBeDefined();
-
+      const testEntity = {
+        name: "React",
+        picturePath: "http://picture.com/1",
+      };
+      const tech = await createOneTechnology(testEntity);
       const updateResult = await mutateUpdateTech(
         { name: "Graphql", picturePath: testEntity.picturePath },
         tech?.id!
@@ -527,35 +698,355 @@ describe("Apollo TechResolver testing", () => {
   describe("mutation delete()", () => {
     it("Error: technology with such id is not found", async () => {
       await checkIfUserAuthorized();
-      const tech: TechInput = {
-        name: "React",
-        picturePath: "http://random.com/1",
-      };
-      const createResult = await mutateCreateTech(tech);
-      expect(createResult.data?.create.entity).toEqual({ name: tech.name });
-      const technology = await Technology.findOne({
-        where: { name: tech.name },
-      });
-      expect(technology).toBeDefined();
       const deleteResult = await mutateDeleteTech(-1);
       expect(deleteResult.data?.delete).toEqual(false);
       await clearSession();
     });
-  });
-  it("Success: technology has been deleted", async () => {
-    await checkIfUserAuthorized();
-    const tech: TechInput = {
-      name: "React",
-      picturePath: "http://random.com/1",
-    };
-    const createResult = await mutateCreateTech(tech);
-    expect(createResult.data?.create.entity).toEqual({ name: tech.name });
-    const technology = await Technology.findOne({
-      where: { name: tech.name },
+    it("Success: technology has been deleted", async () => {
+      await checkIfUserAuthorized();
+      const tech: TechInput = {
+        name: "React",
+        picturePath: "http://random.com/1",
+      };
+      const technology = await createOneTechnology(tech);
+      await Technology.update(
+        { id: technology?.id },
+        { picture: Picture.create() }
+      );
+      const deleteResult = await mutateDeleteTech(technology?.id!);
+      expect(deleteResult.data?.delete).toEqual(true);
+      await clearSession();
     });
-    expect(technology).toBeDefined();
-    const deleteResult = await mutateDeleteTech(technology?.id!);
-    expect(deleteResult.data?.delete).toEqual(true);
-    await clearSession();
+  });
+});
+
+describe("ProjectResolver testing", () => {
+  describe("query getProjects()", () => {
+    it("Warning: no exist projects", async () => {
+      await checkIfUserAuthorized();
+      const result = await queryGetProjects();
+      expect(result.data?.getProjects).toEqual([]);
+      await clearSession();
+    });
+
+    it("Success: current projects have been returned", async () => {
+      await checkIfUserAuthorized();
+      const testProject: ProjectInput = {
+        name: "Test",
+        description: "This is test",
+        status: "In develop",
+        pictureUrls: [],
+        technologyNames: [],
+      };
+      const returnProject = {
+        name: testProject.name,
+        description: testProject.description,
+        status: 0,
+        pictures: [],
+        technologies: [],
+      };
+      const createResult = await mutateCreateProject(testProject);
+      expect(createResult.data?.createProject.entity).toEqual(returnProject);
+      const result = await queryGetProjects();
+      expect(result.data?.getProjects).toEqual([returnProject]);
+      await clearSession();
+    });
+  });
+
+  describe("query getProject()", () => {
+    it("Error: project with such id is not exist", async () => {
+      await checkIfUserAuthorized();
+      const result = await queryGetProject(1);
+      expect(result.data?.getProject).toEqual(null);
+      await clearSession();
+    });
+
+    it("Success: project has been returned", async () => {
+      await checkIfUserAuthorized();
+      const testProject: ProjectInput = {
+        name: "Test",
+        description: "This is test",
+        status: "In develop",
+        pictureUrls: [],
+        technologyNames: [],
+      };
+      const returnProject = {
+        name: "Test",
+        description: "This is test",
+        status: 0,
+        pictures: [],
+        technologies: [],
+      };
+      const createResult = await mutateCreateProject(testProject);
+      expect(createResult.data?.createProject.entity).toEqual(returnProject);
+      const project = await Project.findOne({
+        where: { name: testProject.name },
+      });
+      expect(project).toBeDefined();
+      const result = await queryGetProject(project!.id);
+      expect(result.data?.getProject).toEqual(returnProject);
+      await clearSession();
+    });
+  });
+
+  describe("mutate createProject()", () => {
+    it("Error: name cannot be null", async () => {
+      await checkIfUserAuthorized();
+      const testProject: ProjectInput = {
+        name: "",
+        description: "This is test",
+        status: "In develop",
+        pictureUrls: [],
+        technologyNames: [],
+      };
+      const createProjectResult = await mutateCreateProject(testProject);
+      expect(createProjectResult.data?.createProject.errors).toEqual([
+        errorsMap().get(Errors.PROJECT_NAME_IS_EMPTY),
+      ]);
+      await clearSession();
+    });
+    it("Success: project has been created", async () => {
+      await checkIfUserAuthorized();
+      const testProject: ProjectInput = {
+        name: "Test",
+        description: "This is test",
+        status: "In develop",
+        pictureUrls: [],
+        technologyNames: [],
+      };
+      const returnProject = {
+        name: "Test",
+        description: "This is test",
+        status: 0,
+        pictures: [],
+        technologies: [],
+      };
+      const createProjectResult = await mutateCreateProject(testProject);
+      expect(createProjectResult.data?.createProject.entity).toEqual(
+        returnProject
+      );
+      await clearSession();
+    });
+    it("Success: project with technology has been created", async () => {
+      await checkIfUserAuthorized();
+      const testTech: TechInput = {
+        name: "React",
+        picturePath: "https://picture.com/1",
+      };
+      const tech = await createOneTechnology(testTech);
+      const testProject: ProjectInput = {
+        name: "Test",
+        description: "This is test",
+        status: "In develop",
+        pictureUrls: [],
+        technologyNames: [tech.name],
+      };
+      const returnProject = {
+        name: "Test",
+        description: "This is test",
+        status: 0,
+        pictures: [],
+        technologies: [{ name: tech.name }],
+      };
+      const createProjectResult = await mutateCreateProject(testProject);
+      expect(createProjectResult.data?.createProject.entity).toEqual(
+        returnProject
+      );
+      const project = await Project.findOne({
+        where: { name: testProject.name },
+        relations: ["pictures", "technologies"],
+      });
+      expect(project).toBeDefined();
+      const getProjectResult = await queryGetProject(project!.id);
+      expect(getProjectResult.data?.getProject).toEqual(returnProject);
+      await clearSession();
+    });
+
+    it("Success: project with picture has been created", async () => {
+      await checkIfUserAuthorized();
+      const testProject: ProjectInput = {
+        name: "Test",
+        description: "This is test",
+        status: "In develop",
+        pictureUrls: ["https://picture.com/1"],
+        technologyNames: [],
+      };
+      const returnProject = {
+        name: "Test",
+        description: "This is test",
+        status: 0,
+        pictures: [{ publicLink: testProject.pictureUrls[0] }],
+        technologies: [],
+      };
+      const createProjectResult = await mutateCreateProject(testProject);
+      expect(createProjectResult.data?.createProject.entity).toEqual(
+        returnProject
+      );
+      const project = await Project.findOne({
+        where: { name: testProject.name },
+        relations: ["pictures", "technologies"],
+      });
+      expect(project).toBeDefined();
+      const getProjectResult = await queryGetProject(project!.id);
+      expect(getProjectResult.data?.getProject).toEqual(returnProject);
+      await clearSession();
+    });
+  });
+
+  describe("mutate updateProject()", () => {
+    it("Error: name cannot be null", async () => {
+      await checkIfUserAuthorized();
+      const testProject: ProjectInput = {
+        name: "Test",
+        description: "This is test",
+        status: "In develop",
+        pictureUrls: [],
+        technologyNames: [],
+      };
+      const returnProject = {
+        name: "Test",
+        description: "This is test",
+        status: 0,
+        pictures: [],
+        technologies: [],
+      };
+      const createProjectResult = await mutateCreateProject(testProject);
+      expect(createProjectResult.data?.createProject.entity).toEqual(
+        returnProject
+      );
+      const project = await Project.findOne({
+        where: { name: testProject.name },
+      });
+      expect(project).toBeDefined();
+      const updateProjectResult = await mutateUpdateProject(project!.id, {
+        ...testProject,
+        name: "",
+      });
+      expect(updateProjectResult.data?.updateProject.errors).toEqual([
+        errorsMap().get(Errors.PROJECT_NAME_IS_EMPTY),
+      ]);
+      await clearSession();
+    });
+
+    it("Success: add few pictures", async () => {
+      await checkIfUserAuthorized();
+      const testProject: ProjectInput = {
+        name: "Test",
+        description: "This is test",
+        status: "In develop",
+        pictureUrls: [],
+        technologyNames: [],
+      };
+      const returnProject = {
+        name: "Test",
+        description: "This is test",
+        status: 0,
+        pictures: [],
+        technologies: [],
+      };
+      const createProjectResult = await mutateCreateProject(testProject);
+      expect(createProjectResult.data?.createProject.entity).toEqual(
+        returnProject
+      );
+      const project = await Project.findOne({
+        where: { name: testProject.name },
+        relations: ["pictures"],
+      });
+      expect(project).toBeDefined();
+      const updateProjectResult = await mutateUpdateProject(project!.id, {
+        ...testProject,
+        pictureUrls: ["http://picture.com/1", "http://picture.com/2"],
+      });
+      expect(updateProjectResult.data?.updateProject.entity).toEqual({
+        ...returnProject,
+        pictures: [
+          { publicLink: "http://picture.com/1" },
+          { publicLink: "http://picture.com/2" },
+        ],
+      });
+      await clearSession();
+    });
+
+    it("Success: add few technologies", async () => {
+      await checkIfUserAuthorized();
+      const testProject: ProjectInput = {
+        name: "Test",
+        description: "This is test",
+        status: "In develop",
+        pictureUrls: [],
+        technologyNames: [],
+      };
+      const returnProject = {
+        name: "Test",
+        description: "This is test",
+        status: 0,
+        pictures: [],
+        technologies: [],
+      };
+      const technology1 = await createOneTechnology({
+        name: "React",
+        picturePath: "http://picture.com/1",
+      });
+      const technology2 = await createOneTechnology({
+        name: "Graphql",
+        picturePath: "http://picture.com/2",
+      });
+      const createProjectResult = await mutateCreateProject(testProject);
+      expect(createProjectResult.data?.createProject.entity).toEqual(
+        returnProject
+      );
+      const project = await Project.findOne({
+        where: { name: testProject.name },
+        relations: ["technologies"],
+      });
+      expect(project).toBeDefined();
+      const updateProjectResult = await mutateUpdateProject(project!.id, {
+        ...testProject,
+        technologyNames: [technology1.name, technology2.name],
+      });
+      expect(updateProjectResult.data?.updateProject.entity).toEqual({
+        ...returnProject,
+        technologies: [{ name: technology1.name }, { name: technology2.name }],
+      });
+      await clearSession();
+    });
+  });
+
+  describe("mutate deleteProject()", () => {
+    it("Error: no project with such id", async () => {
+      await checkIfUserAuthorized();
+      const result = await mutateDeleteProject(1);
+      expect(result.data?.deleteProject).toEqual(false);
+      await clearSession();
+    });
+
+    it("Success: project has been deleted", async () => {
+      await checkIfUserAuthorized();
+      const testProject: ProjectInput = {
+        name: "Test",
+        description: "This is test",
+        status: "In develop",
+        pictureUrls: [],
+        technologyNames: [],
+      };
+      const returnProject = {
+        name: "Test",
+        description: "This is test",
+        status: 0,
+        pictures: [],
+        technologies: [],
+      };
+      const createProjectResult = await mutateCreateProject(testProject);
+      expect(createProjectResult.data?.createProject.entity).toEqual(
+        returnProject
+      );
+      const project = await Project.findOne({
+        where: { name: testProject.name },
+      });
+      expect(project).toBeDefined();
+      const result = await mutateDeleteProject(project!.id);
+      expect(result.data?.deleteProject).toEqual(true);
+      await clearSession();
+    });
   });
 });

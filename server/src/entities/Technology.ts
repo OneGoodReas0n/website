@@ -4,14 +4,15 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  ManyToOne,
+  JoinColumn,
+  ManyToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-  OneToOne,
-  JoinColumn,
 } from "typeorm";
-import Project from "./Project";
 import Picture from "./Picture";
+import Project from "./Project";
+import { MinLength } from "class-validator";
 
 @ObjectType()
 @Entity()
@@ -28,6 +29,7 @@ export default class Technology extends BaseEntity {
   @UpdateDateColumn()
   updatedAt = new Date();
 
+  @MinLength(3, { message: "Technology name should be longer than 2 symbols" })
   @Field(() => String)
   @Column({ unique: true })
   name!: string;
@@ -36,8 +38,6 @@ export default class Technology extends BaseEntity {
   @JoinColumn()
   picture: Picture;
 
-  @ManyToOne(() => Project, (project) => project.technologies, {
-    nullable: true,
-  })
-  project: Project;
+  @ManyToMany(() => Project, (project) => project.technologies)
+  projects: Project;
 }

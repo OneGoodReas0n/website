@@ -9,7 +9,9 @@
     "dev": "NODE_ENV=development nodemon dist/index.js",
     "gen-types": "npx gen-env-types .env -o src/env.d.ts -e .",
     "test": "NODE_ENV=test jest",
-    "gen-migration": "NODE_ENV=development yarn typeorm migration:generate -n Init"
+    "migration:gen": "yarn typeorm -c development migration:generate -n Init",
+    "migration:down": "yarn typeorm -c development migration:revert",
+    "migration:up": "yarn typeorm -c development migration:run"
   },
   "dependencies": {
     "@types/connect-redis": "^0.0.14",
@@ -30,6 +32,7 @@
     "ioredis": "^4.17.3",
     "nodemon": "^2.0.4",
     "reflect-metadata": "^0.1.13",
+    "ts-node": "^9.0.0",
     "type-graphql": "^1.0.0",
     "typeorm": "^0.2.26",
     "typescript": "^4.0.3"

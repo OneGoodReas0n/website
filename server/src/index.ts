@@ -14,9 +14,7 @@ const PORT = process.env.PORT;
 (async () => {
   const app = express();
 
-  const conn = await createORMConnection();
-  // await conn.undoLastMigration();
-  // await conn.runMigrations();
+  await createORMConnection();
 
   let RedisStore = connectRedis(session);
   let redisClient = new Redis(process.env.REDIS_URL);

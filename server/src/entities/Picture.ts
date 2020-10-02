@@ -11,6 +11,7 @@ import {
 } from "typeorm";
 import Project from "./Project";
 import Technology from "./Technology";
+import { IsUrl } from "class-validator";
 
 @ObjectType()
 @Entity()
@@ -19,8 +20,9 @@ export default class Picture extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
+  @IsUrl()
   @Field(() => String)
-  @Column()
+  @Column({ unique: true })
   publicLink!: string;
 
   @Field(() => String)
@@ -31,9 +33,11 @@ export default class Picture extends BaseEntity {
   @UpdateDateColumn()
   updatedAt = new Date();
 
-  @OneToOne(() => Technology, (tech) => tech.picture)
+  @OneToOne(() => Technology, (tech) => tech.picture, { onDelete: "CASCADE" })
   technology: Technology;
 
-  @ManyToOne(() => Project, (tech) => tech.pictures)
+  @ManyToOne(() => Project, (project) => project.pictures, {
+    onDelete: "CASCADE",
+  })
   project: Project;
 }
