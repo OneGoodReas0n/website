@@ -6,12 +6,12 @@ export interface HomeProps {}
 
 const Home: React.FC<HomeProps> = ({}) => {
   return (
-    <Box w="100vw" h="100vh">
+    <Box h="100vh">
       <Flex px={16} flexDirection="column" h="100%">
         <Box flexShrink={1}>
           <Header />
         </Box>
-        <Flex flexDirection="column" justifyContent="center" h="100%" mb={20}>
+        <Flex flexDirection="column" justifyContent="center" flex={1} mb={20}>
           <Heading
             letterSpacing={1}
             color="whitesmoke"
