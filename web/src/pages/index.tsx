@@ -3,6 +3,7 @@ import React from "react";
 import Home from "../components/Home";
 import About from "../components/About";
 import Technologies from "../components/Technologies";
+import Projects from "../components/Projects";
 
 const Index: React.FC = () => {
   return (
@@ -10,6 +11,7 @@ const Index: React.FC = () => {
       <Home />
       <About />
       <Technologies />
+      <Projects />
     </Box>
   );
 };

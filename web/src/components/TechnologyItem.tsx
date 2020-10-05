@@ -7,6 +7,7 @@ export interface TechnologyItemProps {
   name: string;
   iconName: string;
   svgColor?: string;
+  category: string;
 }
 
 const TechnologyItem: React.FC<TechnologyItemProps> = ({ name, iconName }) => {
@@ -15,7 +16,7 @@ const TechnologyItem: React.FC<TechnologyItemProps> = ({ name, iconName }) => {
   return (
     <Flex alignItems="center" justifyContent="center">
       <Text mr={4}>{name}</Text>
-      {Icon && <Icon size={32} color="#334455" />}
+      {Icon && <Icon size={32} />}
     </Flex>
   );
 };

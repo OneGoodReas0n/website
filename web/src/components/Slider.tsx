@@ -20,6 +20,7 @@ const Slider: React.FC<SliderProps> = ({
     autoplay: true,
     speed: scrollSpeed,
     autoplaySpeed: scrollDelay,
+    pauseOnHover: true,
   };
   return (
     <Box mt={12}>
