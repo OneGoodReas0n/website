@@ -2,6 +2,7 @@ import React from "react";
 import { Box, Heading, Text } from "@chakra-ui/core";
 import Slider from "./Slider";
 import TechnologyItem, { TechnologyItemProps } from "./TechnologyItem";
+import Title from "./Title";
 
 export interface TechnologiesProps {}
 
@@ -94,9 +95,7 @@ const Technologies: React.FC<TechnologiesProps> = ({}) => {
   })();
   return (
     <Box minHeight="500px" id="technologies">
-      <Heading mt={6} textAlign="center">
-        Technologies
-      </Heading>
+      <Title title="Technologies" />
       <Box overflow="hidden" w="60%" mx="auto">
         <Slider
           children={backTechnologies}
