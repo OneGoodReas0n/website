@@ -1,0 +1,16 @@
+query GetProjects {
+  getProjects {
+    name
+    description
+    status
+    pictures {
+      publicLink
+    }
+    technologies {
+      name
+      picture {
+        publicLink
+      }
+    }
+  }
+}
