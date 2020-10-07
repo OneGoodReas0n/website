@@ -17,6 +17,7 @@ import { ProjectInput } from "../resolvers/project";
 import { TechInput } from "../resolvers/technology";
 import Project from "../entities/Project";
 import Picture from "../entities/Picture";
+import Icon from "../entities/Icon";
 
 type StringOrAst = string | DocumentNode;
 
@@ -68,8 +69,8 @@ const getOneTechMutation = `
    `;
 
 const createTechMutation = `
-   mutation CreateTechMutation($name: String!, $picturePath: String!){
-      create(input:{name:$name, picturePath:$picturePath}){
+   mutation CreateTechMutation($name: String!, $iconPath: String!, $color: String){
+      create(input:{name:$name, iconPath:$iconPath, color:$color}){
          errors{
             name
             field
@@ -82,8 +83,8 @@ const createTechMutation = `
    }`;
 
 const updateTechMutation = `
-  mutation UpdateTechMutation($id: Float!, $name: String!, $picturePath: String!){
-    update(input:{name:$name, picturePath: $picturePath}, id:$id){
+  mutation UpdateTechMutation($id: Float!, $name: String!, $iconPath: String!, $color: String ){
+    update(input:{name:$name, iconPath: $iconPath, color: $color}, id:$id){
       errors{
         name
         field
@@ -328,6 +329,19 @@ const clearPictures = async () => {
   await Promise.all(promises);
 };
 
+const clearIcons = async () => {
+  const icons = await Icon.find();
+  const promises = icons.map((i) => {
+    return new Promise(async (resolve) => {
+      i.technology = new Technology();
+      await i.save();
+      await Icon.remove(i);
+      resolve(true);
+    });
+  });
+  await Promise.all(promises);
+};
+
 const clearTechnologies = async () => {
   const technologies = await Technology.find();
   const promises = technologies.map(async (t) => {
@@ -372,6 +386,7 @@ beforeEach(async () => {
   await clearTechnologies();
   await clearProjects();
   await clearPictures();
+  await clearIcons();
 });
 
 afterAll(async () => {
@@ -555,7 +570,8 @@ describe("TechResolver testing", () => {
       await checkIfUserAuthorized();
       const testTech: TechInput = {
         name: "",
-        picturePath: "http://picture.com/1",
+        iconPath: "http://picture.com/1",
+        color: "#112233",
       };
       const result = await mutateCreateTech(testTech);
       expect(result.data?.create.errors).toEqual([
@@ -564,9 +580,13 @@ describe("TechResolver testing", () => {
       await clearSession();
     });
 
-    it("Error: picturePath is undefined", async () => {
+    it("Error: iconPath is undefined", async () => {
       await checkIfUserAuthorized();
-      const testTech: TechInput = { name: "React", picturePath: "" };
+      const testTech: TechInput = {
+        name: "React",
+        iconPath: "",
+        color: "#112233",
+      };
       const result = await mutateCreateTech(testTech);
       expect(result.data?.create.errors).toEqual([
         errorsMap().get(Errors.TECH_PICTURE_PATH_EMPTY),
@@ -574,9 +594,13 @@ describe("TechResolver testing", () => {
       await clearSession();
     });
 
-    it("Error: picturePath is invalid", async () => {
+    it("Error: iconPath is invalid", async () => {
       await checkIfUserAuthorized();
-      const testTech: TechInput = { name: "React", picturePath: "http://" };
+      const testTech: TechInput = {
+        name: "React",
+        iconPath: "http://",
+        color: "#112233",
+      };
       const result = await mutateCreateTech(testTech);
       expect(result.data?.create.errors).toEqual([
         errorsMap().get(Errors.TECH_PICTURE_PATH_INVALID),
@@ -584,9 +608,9 @@ describe("TechResolver testing", () => {
       await clearSession();
     });
 
-    it("Error: name and picturePath are undefined", async () => {
+    it("Error: name and iconPath are undefined", async () => {
       await checkIfUserAuthorized();
-      const testTech: TechInput = { name: "", picturePath: "" };
+      const testTech: TechInput = { name: "", iconPath: "", color: "" };
       const result = await mutateCreateTech(testTech);
       expect(result.data?.create.errors).toEqual([
         errorsMap().get(Errors.TECH_NAME_EMPTY),
@@ -596,7 +620,11 @@ describe("TechResolver testing", () => {
     });
     it("Success: technology is created", async () => {
       await checkIfUserAuthorized();
-      const testTech = { name: "React", picturePath: "http://picture.com/1" };
+      const testTech = {
+        name: "React",
+        iconPath: "http://picture.com/1",
+        color: "#112233",
+      };
       const result = await mutateCreateTech(testTech);
       expect(result.data?.create.entity).toEqual({ name: testTech.name });
 
@@ -612,11 +640,13 @@ describe("TechResolver testing", () => {
       await checkIfUserAuthorized();
       const testTech: TechInput = {
         name: "React",
-        picturePath: "http://picture.com/1",
+        iconPath: "http://picture.com/1",
+        color: "#112233",
       };
       const getResult = await mutateGetOneTech({
         name: "Graphql",
-        picturePath: testTech.picturePath,
+        iconPath: testTech.iconPath,
+        color: "#112233",
       });
       expect(getResult.data?.getOne).toEqual(null);
       await clearSession();
@@ -626,16 +656,16 @@ describe("TechResolver testing", () => {
       await checkIfUserAuthorized();
       const testTech: TechInput = {
         name: "React",
-        picturePath: "http://picture.com/1",
+        iconPath: "http://picture.com/1",
+        color: "#112233",
       };
-
       const createResult = await mutateCreateTech(testTech);
       expect(createResult.data?.create.entity).toEqual({
         name: testTech.name,
       });
       const tech = await Technology.findOne({
         where: { name: testTech.name },
-        relations: ["picture"],
+        relations: ["icon"],
       });
       expect(tech).toBeDefined();
       const getResult = await testClient.mutate({
@@ -655,7 +685,8 @@ describe("TechResolver testing", () => {
       await checkIfUserAuthorized();
       const testEntity = {
         name: "React",
-        picturePath: "http://picture.com/1",
+        iconPath: "http://picture.com/1",
+        color: "#112233",
       };
       const createResult = await mutateCreateTech(testEntity);
       expect(createResult.data?.create.entity).toEqual({
@@ -667,7 +698,7 @@ describe("TechResolver testing", () => {
       expect(tech).toBeDefined();
 
       const updateResult = await mutateUpdateTech(
-        { name: "", picturePath: testEntity.picturePath },
+        { name: "", iconPath: testEntity.iconPath, color: "#112233" },
         tech?.id!
       );
       expect(updateResult.data?.update.errors).toEqual([
@@ -680,11 +711,12 @@ describe("TechResolver testing", () => {
       await checkIfUserAuthorized();
       const testEntity = {
         name: "React",
-        picturePath: "http://picture.com/1",
+        iconPath: "http://picture.com/1",
+        color: "#112233",
       };
       const tech = await createOneTechnology(testEntity);
       const updateResult = await mutateUpdateTech(
-        { name: "Graphql", picturePath: testEntity.picturePath },
+        { name: "Graphql", iconPath: testEntity.iconPath, color: "#112233" },
         tech?.id!
       );
       expect(updateResult.data?.update.entity).toEqual({
@@ -706,13 +738,11 @@ describe("TechResolver testing", () => {
       await checkIfUserAuthorized();
       const tech: TechInput = {
         name: "React",
-        picturePath: "http://random.com/1",
+        iconPath: "http://random.com/1",
+        color: "#112233",
       };
       const technology = await createOneTechnology(tech);
-      await Technology.update(
-        { id: technology?.id },
-        { picture: Picture.create() }
-      );
+      await Technology.update({ id: technology?.id }, { icon: Icon.create() });
       const deleteResult = await mutateDeleteTech(technology?.id!);
       expect(deleteResult.data?.delete).toEqual(true);
       await clearSession();
@@ -831,7 +861,8 @@ describe("ProjectResolver testing", () => {
       await checkIfUserAuthorized();
       const testTech: TechInput = {
         name: "React",
-        picturePath: "https://picture.com/1",
+        iconPath: "https://picture.com/1",
+        color: "#112233",
       };
       const tech = await createOneTechnology(testTech);
       const testProject: ProjectInput = {
@@ -985,11 +1016,13 @@ describe("ProjectResolver testing", () => {
       };
       const technology1 = await createOneTechnology({
         name: "React",
-        picturePath: "http://picture.com/1",
+        iconPath: "http://picture.com/1",
+        color: "#112233",
       });
       const technology2 = await createOneTechnology({
         name: "Graphql",
-        picturePath: "http://picture.com/2",
+        iconPath: "http://picture.com/2",
+        color: "#112233",
       });
       const createProjectResult = await mutateCreateProject(testProject);
       expect(createProjectResult.data?.createProject.entity).toEqual(

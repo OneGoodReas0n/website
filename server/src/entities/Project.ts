@@ -1,18 +1,21 @@
+import { Max, Min, MinLength } from "class-validator";
 import { Field, Int, ObjectType } from "type-graphql";
 import {
   BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  JoinTable,
   ManyToMany,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-  JoinTable,
 } from "typeorm";
+import Icon from "./Icon";
 import Picture from "./Picture";
 import Technology from "./Technology";
-import { MinLength, Min, Max } from "class-validator";
 
 @ObjectType()
 @Entity()
@@ -49,6 +52,10 @@ export default class Project extends BaseEntity {
 
   @OneToMany(() => Picture, (picture) => picture.project)
   pictures: Picture[];
+
+  @OneToOne(() => Icon, (icon) => icon.project)
+  @JoinColumn()
+  icon: Icon;
 
   @ManyToMany(() => Technology, (technology) => technology.projects)
   @JoinTable()

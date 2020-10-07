@@ -5,15 +5,16 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
 import Project from "./Project";
+import Technology from "./Technology";
 
 @ObjectType()
 @Entity()
-export default class Picture extends BaseEntity {
+export default class Icon extends BaseEntity {
   @Field(() => Int)
   @PrimaryGeneratedColumn()
   id!: number;
@@ -31,7 +32,13 @@ export default class Picture extends BaseEntity {
   @UpdateDateColumn()
   updatedAt = new Date();
 
-  @ManyToOne(() => Project, (project) => project.pictures, {
+  @Field(() => String, { nullable: true })
+  color: string;
+
+  @OneToOne(() => Technology, (tech) => tech.icon, { onDelete: "CASCADE" })
+  technology: Technology;
+
+  @OneToOne(() => Project, (project) => project.icon, {
     onDelete: "CASCADE",
   })
   project: Project;

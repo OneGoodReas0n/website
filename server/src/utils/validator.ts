@@ -64,12 +64,12 @@ export const errorsMap = (): Map<string, FieldError> => {
     },
     {
       name: Errors.TECH_PICTURE_PATH_EMPTY,
-      field: "picturePath",
+      field: "iconPath",
       message: "Picture path cannot be empty",
     },
     {
       name: Errors.TECH_PICTURE_PATH_INVALID,
-      field: "picturePath",
+      field: "iconPath",
       message: "Picture path is not valid",
     },
     {
@@ -154,11 +154,11 @@ export const validateTechnology = (input: TechInput): FieldError[] => {
     const error = errorsMap().get(Errors.TECH_NAME_EMPTY)!;
     errors.push(error);
   }
-  if (!input.picturePath) {
+  if (!input.iconPath) {
     const error = errorsMap().get(Errors.TECH_PICTURE_PATH_EMPTY)!;
     errors.push(error);
   } else if (
-    !input.picturePath.match(
+    !input.iconPath.match(
       /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gm
     )
   ) {

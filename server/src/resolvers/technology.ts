@@ -10,18 +10,20 @@ import {
   Root,
   UseMiddleware,
 } from "type-graphql";
-import Picture from "../entities/Picture";
 import Technology from "../entities/Technology";
 import { isAuth } from "../middleware/isAuth";
 import { Errors, errorsMap, validateTechnology } from "../utils/validator";
 import { GenericResponse } from "./types";
+import Icon from "../entities/Icon";
 
 @InputType()
 export class TechInput {
   @Field()
   name: string;
   @Field()
-  picturePath: string;
+  iconPath: string;
+  @Field({ nullable: true })
+  color?: string;
 }
 
 @ObjectType()
@@ -29,13 +31,13 @@ class TechResponse extends GenericResponse(Technology) {}
 
 @Resolver(Technology)
 export default class TechnologyResolver {
-  @FieldResolver(() => Picture, { nullable: true })
-  async picture(@Root() technology: Technology) {
+  @FieldResolver(() => Icon, { nullable: true })
+  async icon(@Root() technology: Technology) {
     const tech = await Technology.findOne({
       where: { id: technology.id },
-      relations: ["picture"],
+      relations: ["icon"],
     });
-    return tech?.picture;
+    return tech?.icon;
   }
 
   @UseMiddleware(isAuth)
@@ -66,12 +68,13 @@ export default class TechnologyResolver {
     if (tech) {
       return { errors: [errorsMap().get(Errors.TECH_IS_CREATED)!] };
     }
-    const picture = await Picture.create({
-      publicLink: input.picturePath,
+    const icon = await Icon.create({
+      publicLink: input.iconPath,
+      color: input.color,
     }).save();
     const technology = await Technology.create({
       name: input.name,
-      picture,
+      icon,
     }).save();
     return { entity: technology };
   }
@@ -89,7 +92,7 @@ export default class TechnologyResolver {
     }
     const technology = await Technology.findOne({
       where: { id },
-      relations: ["picture"],
+      relations: ["icon"],
     });
     if (!technology) {
       return { errors: [errorsMap().get(Errors.TECH_IS_NOT_FOUND)!] };
@@ -98,9 +101,9 @@ export default class TechnologyResolver {
       technology.name = input.name;
     }
 
-    if (technology.picture.publicLink !== input.picturePath) {
-      await Picture.update(technology.picture.id, {
-        publicLink: input.picturePath,
+    if (technology.icon.publicLink !== input.iconPath) {
+      await Icon.update(technology.icon.id, {
+        publicLink: input.iconPath,
       });
     }
     tech = await Technology.save(technology);
