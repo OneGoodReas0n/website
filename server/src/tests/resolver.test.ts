@@ -983,7 +983,7 @@ describe("ProjectResolver testing", () => {
         where: { name: testProject.name },
         relations: ["pictures"],
       });
-      expet(project).toBeDefined();
+      expect(project).toBeDefined();
       const updateProjectResult = await mutateUpdateProject(project!.id, {
         ...testProject,
         pictures: [
