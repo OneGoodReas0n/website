@@ -9,24 +9,25 @@ import {
   Mutation,
   FieldResolver,
   Root,
+  UseMiddleware,
 } from "type-graphql";
 import { GenericResponse } from "./types";
 import { validateProject, errorsMap, Errors } from "../utils/validator";
 import Picture from "../entities/Picture";
 import Technology from "../entities/Technology";
+import { isAuth } from "../middleware/isAuth";
 
-const addOrReturnPictureAsync = async (
-  pictureLink: string
-): Promise<Picture> => {
+const addOrReturnPictureAsync = async (obj: PictureObj): Promise<Picture> => {
   return new Promise(async (resolve) => {
     const picture = await Picture.findOne({
-      where: { publicLink: pictureLink },
+      where: { publicLink: obj.url },
     });
     if (picture) {
       resolve(picture);
     } else {
       const newPicture = await Picture.create({
-        publicLink: pictureLink,
+        publicLink: obj.url,
+        primary: obj.primary,
       }).save();
       resolve(newPicture);
     }
@@ -47,6 +48,14 @@ const deletePictureAsync = async (pictureLink: string): Promise<Boolean> => {
 };
 
 @InputType()
+class PictureObj {
+  @Field(() => String)
+  url: string;
+  @Field(() => Number, { nullable: true })
+  primary?: number;
+}
+
+@InputType()
 export class ProjectInput {
   @Field()
   name: string;
@@ -54,8 +63,8 @@ export class ProjectInput {
   description?: string;
   @Field()
   status: "In develop" | "Completed" | "Planned";
-  @Field(() => [String], { nullable: true })
-  pictureUrls: string[];
+  @Field(() => [PictureObj], { nullable: true })
+  pictures: PictureObj[];
   @Field(() => [String], { nullable: true })
   technologyNames: string[];
 }
@@ -81,6 +90,7 @@ export default class TechnologyResolver {
     return currentProject?.technologies;
   }
 
+  @UseMiddleware(isAuth)
   @Query(() => Project, { nullable: true })
   async getProject(@Arg("id") id: number): Promise<Project | null> {
     const project = await Project.findOne(id);
@@ -90,18 +100,21 @@ export default class TechnologyResolver {
     return project;
   }
 
+  @UseMiddleware(isAuth)
   @Query(() => [Project])
   async getProjects(): Promise<Project[]> {
     const projects = await Project.find();
     return projects;
   }
 
+  @UseMiddleware(isAuth)
   @Mutation(() => ProjectResponse)
   async createProject(
     @Arg("input") input: ProjectInput
   ): Promise<ProjectResponse> {
-    const { name, description, status, pictureUrls, technologyNames } = input;
-    let pictures: Picture[] = [];
+    const { name, description, status, pictures, technologyNames } = input;
+    let newPictures: Picture[] = [];
+
     let technologies: Technology[] = [];
     const errors = validateProject(input);
     if (errors.length > 0) {
@@ -112,9 +125,9 @@ export default class TechnologyResolver {
       return { errors: [errorsMap().get(Errors.PROJECT_IS_CREATED)!] };
     }
 
-    if (pictureUrls && pictureUrls.length > 0) {
-      const actions = await pictureUrls.map((p) => addOrReturnPictureAsync(p));
-      pictures = await Promise.all(actions);
+    if (pictures.length > 0) {
+      const actions = await pictures.map((p) => addOrReturnPictureAsync(p));
+      newPictures = await Promise.all(actions);
     }
 
     if (technologyNames && technologyNames.length > 0) {
@@ -127,19 +140,20 @@ export default class TechnologyResolver {
       name,
       description,
       status: status === "In develop" ? 0 : status === "Completed" ? 1 : 2,
-      pictures,
+      pictures: newPictures,
       technologies,
     }).save();
     return { entity: newProject };
   }
 
+  @UseMiddleware(isAuth)
   @Mutation(() => ProjectResponse)
   async updateProject(
     @Arg("input") input: ProjectInput,
     @Arg("id") id: number
   ): Promise<ProjectResponse> {
-    const { name, description, status, pictureUrls, technologyNames } = input;
-    let pictures: Picture[] = [];
+    const { name, description, status, pictures, technologyNames } = input;
+    let pictureArr: Picture[] = [];
     let technologies: Technology[] = [];
     const errors = validateProject(input);
     if (errors.length > 0) {
@@ -154,9 +168,10 @@ export default class TechnologyResolver {
     const pictureUrlsFromDb = picturesFromDb.map((pic) => pic.publicLink);
     const technologiesFromDb = await Technology.find();
 
-    if (pictureUrls && pictureUrls.length > 0) {
-      if (pictureUrls.length > pictureUrlsFromDb.length) {
-        const existedPicturesUrls = pictureUrlsFromDb.filter((pic) =>
+    if (pictures.length > 0) {
+      if (pictures.length > pictureUrlsFromDb.length) {
+        const pictureUrls: string[] = pictures.map((p) => p.url);
+        const existedPicturesUrls: string[] = pictureUrlsFromDb.filter((pic) =>
           pictureUrls.includes(pic)
         );
         const newPicturesUrls = pictureUrls.filter(
@@ -171,14 +186,18 @@ export default class TechnologyResolver {
         const existedPictures = await Picture.find({
           where: { project },
         });
-        const actions = await newPicturesUrls.map((p) =>
+        const picturesToAdd = pictures.filter((p) =>
+          newPicturesUrls.includes(p.url)
+        );
+        const actions = await picturesToAdd.map((p) =>
           addOrReturnPictureAsync(p)
         );
         const newPictures = await Promise.all(actions);
         const allPictures = existedPictures.concat(newPictures);
 
-        pictures = allPictures;
+        pictureArr = allPictures;
       } else {
+        const pictureUrls = pictures.map((p) => p.url);
         const pictureUrlsToDelete = pictureUrlsFromDb.filter((pic) => {
           return !pictureUrls.includes(pic);
         });
@@ -187,14 +206,14 @@ export default class TechnologyResolver {
           deletePictureAsync(p)
         );
         await Promise.all(actions);
-        pictures = await Picture.find({
+        pictureArr = await Picture.find({
           where: { project },
         });
       }
-    } else if (pictureUrls.length === 0 && picturesFromDb.length > 0) {
+    } else if (pictures.length === 0 && picturesFromDb.length > 0) {
       const actions = await pictureUrlsFromDb.map((p) => deletePictureAsync(p));
       await Promise.all(actions);
-      pictures = await Picture.find({
+      pictureArr = await Picture.find({
         where: { project },
       });
     }
@@ -207,7 +226,7 @@ export default class TechnologyResolver {
     const numStatus =
       status === "In develop" ? 0 : status === "Completed" ? 1 : 2;
 
-    project!.pictures = pictures;
+    project!.pictures = pictureArr;
     project!.technologies = technologies;
     project!.name = name;
     project!.description = description;
@@ -217,6 +236,7 @@ export default class TechnologyResolver {
     return { entity: project };
   }
 
+  @UseMiddleware(isAuth)
   @Mutation(() => Boolean)
   async deleteProject(@Arg("id") id: number): Promise<Boolean> {
     const project = await Project.findOne(id);

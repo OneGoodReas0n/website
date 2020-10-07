@@ -135,8 +135,8 @@ const getProjectQuery = `
 `;
 
 const createProjectMutation = `
-  mutation CreateProjectMutation($name: String!, $description: String, $status: String!, $pictureUrls: [String!], $technologyNames: [String!]){
-    createProject(input:{name:$name, description:$description, status: $status, pictureUrls:$pictureUrls, technologyNames:$technologyNames}){
+  mutation CreateProjectMutation($name: String!, $description: String, $status: String!, $pictures: [PictureObj!], $technologyNames: [String!]){
+    createProject(input:{name:$name, description:$description, status: $status, pictures:$pictures, technologyNames:$technologyNames}){
       errors{
         name
         field
@@ -158,8 +158,8 @@ const createProjectMutation = `
 `;
 
 const updateProjectMutation = `
-  mutation UpdateProjectMutation($id: Float!, $name: String!, $description: String, $status: String!, $pictureUrls: [String!], $technologyNames: [String!]){
-    updateProject(id:$id,input:{name:$name, description:$description, status: $status, pictureUrls:$pictureUrls, technologyNames:$technologyNames}){
+  mutation UpdateProjectMutation($id: Float!, $name: String!, $description: String, $status: String!, $pictures: [PictureObj!], $technologyNames: [String!]){
+    updateProject(id:$id,input:{name:$name, description:$description, status: $status, pictures:$pictures, technologyNames:$technologyNames}){
       errors{
         name
         field
@@ -765,7 +765,7 @@ describe("ProjectResolver testing", () => {
         name: "Test",
         description: "This is test",
         status: "In develop",
-        pictureUrls: [],
+        pictures: [],
         technologyNames: [],
       };
       const returnProject = {
@@ -797,7 +797,7 @@ describe("ProjectResolver testing", () => {
         name: "Test",
         description: "This is test",
         status: "In develop",
-        pictureUrls: [],
+        pictures: [],
         technologyNames: [],
       };
       const returnProject = {
@@ -826,7 +826,7 @@ describe("ProjectResolver testing", () => {
         name: "",
         description: "This is test",
         status: "In develop",
-        pictureUrls: [],
+        pictures: [],
         technologyNames: [],
       };
       const createProjectResult = await mutateCreateProject(testProject);
@@ -841,7 +841,7 @@ describe("ProjectResolver testing", () => {
         name: "Test",
         description: "This is test",
         status: "In develop",
-        pictureUrls: [],
+        pictures: [],
         technologyNames: [],
       };
       const returnProject = {
@@ -869,7 +869,7 @@ describe("ProjectResolver testing", () => {
         name: "Test",
         description: "This is test",
         status: "In develop",
-        pictureUrls: [],
+        pictures: [],
         technologyNames: [tech.name],
       };
       const returnProject = {
@@ -899,14 +899,14 @@ describe("ProjectResolver testing", () => {
         name: "Test",
         description: "This is test",
         status: "In develop",
-        pictureUrls: ["https://picture.com/1"],
+        pictures: [{ url: "https://picture.com/1" }],
         technologyNames: [],
       };
       const returnProject = {
         name: "Test",
         description: "This is test",
         status: 0,
-        pictures: [{ publicLink: testProject.pictureUrls[0] }],
+        pictures: [{ publicLink: testProject.pictures[0].url }],
         technologies: [],
       };
       const createProjectResult = await mutateCreateProject(testProject);
@@ -931,7 +931,7 @@ describe("ProjectResolver testing", () => {
         name: "Test",
         description: "This is test",
         status: "In develop",
-        pictureUrls: [],
+        pictures: [],
         technologyNames: [],
       };
       const returnProject = {
@@ -965,7 +965,7 @@ describe("ProjectResolver testing", () => {
         name: "Test",
         description: "This is test",
         status: "In develop",
-        pictureUrls: [],
+        pictures: [],
         technologyNames: [],
       };
       const returnProject = {
@@ -983,10 +983,13 @@ describe("ProjectResolver testing", () => {
         where: { name: testProject.name },
         relations: ["pictures"],
       });
-      expect(project).toBeDefined();
+      expet(project).toBeDefined();
       const updateProjectResult = await mutateUpdateProject(project!.id, {
         ...testProject,
-        pictureUrls: ["http://picture.com/1", "http://picture.com/2"],
+        pictures: [
+          { url: "http://picture.com/1" },
+          { url: "http://picture.com/2" },
+        ],
       });
       expect(updateProjectResult.data?.updateProject.entity).toEqual({
         ...returnProject,
@@ -1004,7 +1007,7 @@ describe("ProjectResolver testing", () => {
         name: "Test",
         description: "This is test",
         status: "In develop",
-        pictureUrls: [],
+        pictures: [],
         technologyNames: [],
       };
       const returnProject = {
@@ -1059,7 +1062,7 @@ describe("ProjectResolver testing", () => {
         name: "Test",
         description: "This is test",
         status: "In develop",
-        pictureUrls: [],
+        pictures: [],
         technologyNames: [],
       };
       const returnProject = {

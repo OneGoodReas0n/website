@@ -31,6 +31,9 @@ export default class Picture extends BaseEntity {
   @UpdateDateColumn()
   updatedAt = new Date();
 
+  @Field({ defaultValue: 0, nullable: true })
+  primary: number;
+
   @ManyToOne(() => Project, (project) => project.pictures, {
     onDelete: "CASCADE",
   })

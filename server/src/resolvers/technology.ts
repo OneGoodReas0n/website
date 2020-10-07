@@ -50,6 +50,7 @@ export default class TechnologyResolver {
     return technology;
   }
 
+  @UseMiddleware(isAuth)
   @Query(() => [Technology])
   async getAll(): Promise<Technology[]> {
     const technologies = await Technology.find({});
