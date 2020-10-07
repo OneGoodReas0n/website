@@ -29,7 +29,7 @@ const PORT = process.env.PORT;
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7 day
         httpOnly: true,
-        secure: __prod__, //cookie only works in http
+        secure: __prod__,
         sameSite: "lax",
         domain: __prod__ ? "http://localhost:3000" : "",
       },
@@ -40,7 +40,7 @@ const PORT = process.env.PORT;
 
   const apolloServer = await createApolloServer();
 
-  apolloServer.applyMiddleware({ app });
+  apolloServer.applyMiddleware({ app, cors: false });
 
   app.listen(parseInt(PORT), () => {
     console.log("Server started on localhost:", PORT);
