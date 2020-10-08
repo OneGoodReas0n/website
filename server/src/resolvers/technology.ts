@@ -68,7 +68,7 @@ export default class TechnologyResolver {
 
   @UseMiddleware(isAuth)
   @Query(() => Technology, { nullable: true })
-  async getOne(@Arg("name") name: string): Promise<Technology | null> {
+  async getTechnology(@Arg("name") name: string): Promise<Technology | null> {
     const technology = await Technology.findOne({ where: { name } });
     if (!technology) {
       return null;
@@ -78,14 +78,16 @@ export default class TechnologyResolver {
 
   @UseMiddleware(isAuth)
   @Query(() => [Technology])
-  async getAll(): Promise<Technology[]> {
+  async getTechnologies(): Promise<Technology[]> {
     const technologies = await Technology.find({});
     return technologies;
   }
 
   @UseMiddleware(isAuth)
   @Mutation(() => TechResponse, { nullable: true })
-  async create(@Arg("input") input: TechInput): Promise<TechResponse> {
+  async createTechnology(
+    @Arg("input") input: TechInput
+  ): Promise<TechResponse> {
     const errors = validateTechnology(input);
     if (errors.length > 0) {
       return { errors };
@@ -132,7 +134,7 @@ export default class TechnologyResolver {
 
   @UseMiddleware(isAuth)
   @Mutation(() => TechResponse, { nullable: true })
-  async update(
+  async updateTechnology(
     @Arg("id") id: number,
     @Arg("input") input: TechInput
   ): Promise<TechResponse> {
@@ -177,7 +179,7 @@ export default class TechnologyResolver {
 
   @UseMiddleware(isAuth)
   @Mutation(() => Boolean, { nullable: true })
-  async delete(@Arg("id") id: number): Promise<Boolean> {
+  async deleteTechnology(@Arg("id") id: number): Promise<Boolean> {
     const technology = await Technology.findOne(id);
     if (!technology) {
       return false;

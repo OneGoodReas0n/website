@@ -61,8 +61,8 @@ export const meQuery = `
    }`;
 
 const getOneTechMutation = `
-   query GetOneTechnology($name: String!){
-     getOne(name: $name){
+   query GetTechnology($name: String!){
+     getTechnology(name: $name){
         name
         icon{
           url
@@ -77,8 +77,8 @@ const getOneTechMutation = `
    `;
 
 const createTechMutation = `
-   mutation CreateTechMutation($name: String!, $icon: IconInput!, $category: CategoryInput!){
-      create(input:{name:$name, icon:$icon, category:$category}){
+   mutation CreateTechnology($name: String!, $icon: IconInput!, $category: CategoryInput!){
+      createTechnology(input:{name:$name, icon:$icon, category:$category}){
          errors{
             name
             field
@@ -99,8 +99,8 @@ const createTechMutation = `
    }`;
 
 const updateTechMutation = `
-  mutation UpdateTechMutation($id: Float!, $name: String!, $icon: IconInput!, $category: CategoryInput! ){
-    update(input:{name:$name, icon: $icon, category: $category}, id:$id){
+  mutation UpdateTechnology($id: Float!, $name: String!, $icon: IconInput!, $category: CategoryInput! ){
+    updateTechnology(input:{name:$name, icon: $icon, category: $category}, id:$id){
       errors{
         name
         field
@@ -121,8 +121,8 @@ const updateTechMutation = `
   }`;
 
 const deleteTechMutation = `
-  mutation DeleteTech($id: Float!){
-    delete(id: $id)
+  mutation DeleteTechnology($id: Float!){
+    deleteTechnology(id: $id)
   }`;
 
 const getProjectsQuery = `
@@ -416,7 +416,7 @@ const clearProjects = async () => {
 
 const createOneTechnology = async (input: TechInput): Promise<Technology> => {
   const result = await mutateCreateTech(input);
-  expect(result.data?.create.entity).toEqual(input);
+  expect(result.data?.createTechnology.entity).toEqual(input);
   const tech = await Technology.findOne({
     where: { name: input.name },
   });
@@ -624,7 +624,7 @@ describe("TechResolver testing", () => {
         category: { name: "Backend", color: "#FFFFFF" },
       };
       const result = await mutateCreateTech(testTech);
-      expect(result.data?.create.errors).toEqual([
+      expect(result.data?.createTechnology.errors).toEqual([
         errorsMap().get(Errors.TECH_NAME_EMPTY),
       ]);
       await clearSession();
@@ -638,7 +638,7 @@ describe("TechResolver testing", () => {
         category: { name: "Backend", color: "#FFFFFF" },
       };
       const result = await mutateCreateTech(testTech);
-      expect(result.data?.create.errors).toEqual([
+      expect(result.data?.createTechnology.errors).toEqual([
         errorsMap().get(Errors.TECH_PICTURE_PATH_EMPTY),
       ]);
       await clearSession();
@@ -652,7 +652,7 @@ describe("TechResolver testing", () => {
         category: { name: "Backend", color: "#FFFFFF" },
       };
       const result = await mutateCreateTech(testTech);
-      expect(result.data?.create.errors).toEqual([
+      expect(result.data?.createTechnology.errors).toEqual([
         errorsMap().get(Errors.TECH_PICTURE_PATH_INVALID),
       ]);
       await clearSession();
@@ -666,7 +666,7 @@ describe("TechResolver testing", () => {
         category: { name: "Backend", color: "#FFFFFF" },
       };
       const result = await mutateCreateTech(testTech);
-      expect(result.data?.create.entity).toEqual(testTech);
+      expect(result.data?.createTechnology.entity).toEqual(testTech);
 
       const tech = await Technology.findOne({
         where: { name: testTech.name },
@@ -683,7 +683,7 @@ describe("TechResolver testing", () => {
         icon: { url: "http://picture.com/1" },
         category: { name: "Backend" },
       });
-      expect(getResult.data?.getOne).toEqual(null);
+      expect(getResult.data?.getTechnology).toEqual(null);
       await clearSession();
     });
 
@@ -695,7 +695,7 @@ describe("TechResolver testing", () => {
         category: { name: "Backend", color: "#FFF" },
       };
       const createResult = await mutateCreateTech(testTech);
-      expect(createResult.data?.create.entity).toEqual(testTech);
+      expect(createResult.data?.createTechnology.entity).toEqual(testTech);
       const tech = await Technology.findOne({
         where: { name: testTech.name },
         relations: ["icon", "category"],
@@ -705,7 +705,7 @@ describe("TechResolver testing", () => {
         mutation: getOneTechMutation,
         variables: { name: tech?.name },
       });
-      expect(getResult.data?.getOne).toEqual(testTech);
+      expect(getResult.data?.getTechnology).toEqual(testTech);
       await clearSession();
     });
   });
@@ -719,7 +719,7 @@ describe("TechResolver testing", () => {
         category: { name: "Backend", color: "" },
       };
       const createResult = await mutateCreateTech(testEntity);
-      expect(createResult.data?.create.entity).toEqual(testEntity);
+      expect(createResult.data?.createTechnology.entity).toEqual(testEntity);
       const tech = await Technology.findOne({
         where: { name: testEntity.name },
       });
@@ -733,7 +733,7 @@ describe("TechResolver testing", () => {
         },
         tech?.id!
       );
-      expect(updateResult.data?.update.errors).toEqual([
+      expect(updateResult.data?.updateTechnology.errors).toEqual([
         errorsMap().get(Errors.TECH_NAME_EMPTY),
       ]);
       await clearSession();
@@ -753,7 +753,7 @@ describe("TechResolver testing", () => {
       };
       const tech = await createOneTechnology(testEntity);
       const updateResult = await mutateUpdateTech(newEntity, tech?.id!);
-      expect(updateResult.data?.update.entity).toEqual(newEntity);
+      expect(updateResult.data?.updateTechnology.entity).toEqual(newEntity);
       await clearSession();
     });
   });
@@ -762,7 +762,7 @@ describe("TechResolver testing", () => {
     it("Error: technology with such id is not found", async () => {
       await checkIfUserAuthorized();
       const deleteResult = await mutateDeleteTech(-1);
-      expect(deleteResult.data?.delete).toEqual(false);
+      expect(deleteResult.data?.deleteTechnology).toEqual(false);
       await clearSession();
     });
     it("Success: technology has been deleted", async () => {
@@ -778,7 +778,7 @@ describe("TechResolver testing", () => {
         { icon: Icon.create(), category: Category.create() }
       );
       const deleteResult = await mutateDeleteTech(technology?.id!);
-      expect(deleteResult.data?.delete).toEqual(true);
+      expect(deleteResult.data?.deleteTechnology).toEqual(true);
       await clearSession();
     });
   });
