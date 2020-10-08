@@ -32,6 +32,7 @@ export default class Picture extends BaseEntity {
   updatedAt = new Date();
 
   @Field({ defaultValue: 0, nullable: true })
+  @Column({ default: 0, nullable: true })
   primary: number;
 
   @ManyToOne(() => Project, (project) => project.pictures, {

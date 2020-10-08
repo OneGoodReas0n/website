@@ -1,10 +1,10 @@
 import {MigrationInterface, QueryRunner} from "typeorm";
 
-export class Init1602140145835 implements MigrationInterface {
-    name = 'Init1602140145835'
+export class Init1602159401377 implements MigrationInterface {
+    name = 'Init1602159401377'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`CREATE TABLE "picture" ("id" SERIAL NOT NULL, "url" character varying NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "projectId" integer, CONSTRAINT "UQ_34e232c33ec4bea8acb8877e89d" UNIQUE ("url"), CONSTRAINT "PK_31ccf37c74bae202e771c0c2a38" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "picture" ("id" SERIAL NOT NULL, "url" character varying NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "primary" integer DEFAULT 0, "projectId" integer, CONSTRAINT "UQ_34e232c33ec4bea8acb8877e89d" UNIQUE ("url"), CONSTRAINT "PK_31ccf37c74bae202e771c0c2a38" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "project" ("id" SERIAL NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "name" character varying NOT NULL, "description" character varying, "status" integer NOT NULL, "iconId" integer, CONSTRAINT "UQ_dedfea394088ed136ddadeee89c" UNIQUE ("name"), CONSTRAINT "REL_e3d1122adde69ead6aa6566303" UNIQUE ("iconId"), CONSTRAINT "PK_4d68b1358bb5b766d3e78f32f57" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "icon" ("id" SERIAL NOT NULL, "url" character varying NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "color" character varying, CONSTRAINT "UQ_02b43282442e1716bdf056e540b" UNIQUE ("url"), CONSTRAINT "PK_7860777a14d73877ab2bf5a341c" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "technology" ("id" SERIAL NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "name" character varying NOT NULL, "categoryId" integer, "iconId" integer, CONSTRAINT "UQ_0e93116dd895bf20badb82d3ed6" UNIQUE ("name"), CONSTRAINT "REL_20ae87a9632ee98f580af61f85" UNIQUE ("iconId"), CONSTRAINT "PK_89f217a9ebf9b4bc1a0d74883ec" PRIMARY KEY ("id"))`);

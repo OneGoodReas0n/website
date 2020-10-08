@@ -116,7 +116,10 @@ export default class TechnologyResolver {
     if (categoryFromDb) {
       category = categoryFromDb;
     } else {
-      category = await Category.create({ name: input.category.name }).save();
+      category = await Category.create({
+        name: input.category.name,
+        color: input.category.color,
+      }).save();
     }
 
     const technology = await Technology.create({
