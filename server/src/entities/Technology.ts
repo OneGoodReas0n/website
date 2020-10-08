@@ -7,10 +7,12 @@ import {
   Entity,
   JoinColumn,
   ManyToMany,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
+import Category from "./Category";
 import Icon from "./Icon";
 import Project from "./Project";
 
@@ -33,6 +35,12 @@ export default class Technology extends BaseEntity {
   @Field(() => String)
   @Column({ unique: true })
   name!: string;
+
+  @ManyToOne(() => Category, (category) => category.technology, {
+    nullable: true,
+  })
+  @JoinColumn()
+  category: Category;
 
   @OneToOne(() => Icon, (icon) => icon.technology, { nullable: true })
   @JoinColumn()

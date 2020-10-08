@@ -41,7 +41,7 @@ export default class Project extends BaseEntity {
     message: "Project description should be longer than 10 symbols",
   })
   @Field(() => String, { nullable: true })
-  @Column()
+  @Column({ nullable: true })
   description?: string;
 
   @Min(0)

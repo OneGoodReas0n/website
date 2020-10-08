@@ -21,7 +21,7 @@ export default class Picture extends BaseEntity {
   @IsUrl()
   @Field(() => String)
   @Column({ unique: true })
-  publicLink!: string;
+  url!: string;
 
   @Field(() => String)
   @CreateDateColumn()

@@ -15,6 +15,7 @@ export enum Errors {
   TECH_PICTURE_PATH_INVALID = "TECH_PICTURE_PATH_INVALID",
   TECH_IS_CREATED = "TECH_IS_CREATED",
   TECH_IS_NOT_FOUND = "TECH_IS_NOT_FOUND",
+  TECH_CATEGORY_IS_EMPTY = "TECH_CATEGORY_IS_EMPTY",
   PROJECT_IS_NOT_FOUND = "PROJECT_IS_NOT_FOUND",
   PROJECT_NAME_IS_EMPTY = "PROJECT_NAME_IS_EMPTY",
   PROJECT_PICTURE_IS_EMPTY = "PROJECT_PICTURE_IS_EMPTY",
@@ -112,6 +113,11 @@ export const errorsMap = (): Map<string, FieldError> => {
       field: "error",
       message: "Project with such name is already created",
     },
+    {
+      name: Errors.TECH_CATEGORY_IS_EMPTY,
+      field: "category",
+      message: "Category name cannot be empty",
+    },
   ];
   errors.forEach((e) => {
     map.set(e.name, e);
@@ -154,17 +160,23 @@ export const validateTechnology = (input: TechInput): FieldError[] => {
     const error = errorsMap().get(Errors.TECH_NAME_EMPTY)!;
     errors.push(error);
   }
-  if (!input.iconPath) {
+  if (!input.icon.url) {
     const error = errorsMap().get(Errors.TECH_PICTURE_PATH_EMPTY)!;
     errors.push(error);
   } else if (
-    !input.iconPath.match(
+    !input.icon.url.match(
       /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gm
     )
   ) {
     const error = errorsMap().get(Errors.TECH_PICTURE_PATH_INVALID)!;
     errors.push(error);
   }
+
+  if (input.category.name.length === 0) {
+    const error = errorsMap().get(Errors.TECH_PICTURE_PATH_INVALID)!;
+    errors.push(error);
+  }
+
   return errors;
 };
 

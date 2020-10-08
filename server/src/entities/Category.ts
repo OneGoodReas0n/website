@@ -1,28 +1,25 @@
-import { IsUrl } from "class-validator";
 import { Field, Int, ObjectType } from "type-graphql";
 import {
   BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
-  OneToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
-import Project from "./Project";
 import Technology from "./Technology";
 
 @ObjectType()
 @Entity()
-export default class Icon extends BaseEntity {
+export default class Category extends BaseEntity {
   @Field(() => Int)
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @IsUrl()
   @Field(() => String)
   @Column({ unique: true })
-  url!: string;
+  name!: string;
 
   @Field(() => String)
   @CreateDateColumn()
@@ -36,11 +33,6 @@ export default class Icon extends BaseEntity {
   @Column({ nullable: true })
   color!: string;
 
-  @OneToOne(() => Technology, (tech) => tech.icon, { onDelete: "CASCADE" })
+  @OneToMany(() => Technology, (tech) => tech.category, { onDelete: "CASCADE" })
   technology: Technology;
-
-  @OneToOne(() => Project, (project) => project.icon, {
-    onDelete: "CASCADE",
-  })
-  project: Project;
 }

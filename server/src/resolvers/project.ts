@@ -20,13 +20,13 @@ import { isAuth } from "../middleware/isAuth";
 const addOrReturnPictureAsync = async (obj: PictureObj): Promise<Picture> => {
   return new Promise(async (resolve) => {
     const picture = await Picture.findOne({
-      where: { publicLink: obj.url },
+      where: { url: obj.url },
     });
     if (picture) {
       resolve(picture);
     } else {
       const newPicture = await Picture.create({
-        publicLink: obj.url,
+        url: obj.url,
         primary: obj.primary,
       }).save();
       resolve(newPicture);
@@ -36,7 +36,7 @@ const addOrReturnPictureAsync = async (obj: PictureObj): Promise<Picture> => {
 
 const deletePictureAsync = async (pictureLink: string): Promise<Boolean> => {
   const picture = await Picture.findOne({
-    where: { publicLink: pictureLink },
+    where: { url: pictureLink },
   });
   if (picture) {
     picture.project = new Project();
@@ -165,7 +165,7 @@ export default class TechnologyResolver {
     const picturesFromDb = await Picture.find({
       where: { project },
     });
-    const pictureUrlsFromDb = picturesFromDb.map((pic) => pic.publicLink);
+    const pictureUrlsFromDb = picturesFromDb.map((pic) => pic.url);
     const technologiesFromDb = await Technology.find();
 
     if (pictures.length > 0) {

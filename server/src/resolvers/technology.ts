@@ -15,15 +15,32 @@ import { isAuth } from "../middleware/isAuth";
 import { Errors, errorsMap, validateTechnology } from "../utils/validator";
 import { GenericResponse } from "./types";
 import Icon from "../entities/Icon";
+import Category from "../entities/Category";
+
+@InputType()
+class CategoryInput {
+  @Field()
+  name: string;
+  @Field({ nullable: true })
+  color?: string;
+}
+
+@InputType()
+class IconInput {
+  @Field()
+  url: string;
+  @Field({ nullable: true })
+  color?: string;
+}
 
 @InputType()
 export class TechInput {
   @Field()
   name: string;
-  @Field()
-  iconPath: string;
-  @Field({ nullable: true })
-  color?: string;
+  @Field(() => CategoryInput)
+  category: CategoryInput;
+  @Field(() => IconInput)
+  icon: IconInput;
 }
 
 @ObjectType()
@@ -38,6 +55,15 @@ export default class TechnologyResolver {
       relations: ["icon"],
     });
     return tech?.icon;
+  }
+
+  @FieldResolver(() => Category, { nullable: true })
+  async category(@Root() technology: Technology) {
+    const tech = await Technology.findOne({
+      where: { id: technology.id },
+      relations: ["category"],
+    });
+    return tech?.category;
   }
 
   @UseMiddleware(isAuth)
@@ -69,13 +95,34 @@ export default class TechnologyResolver {
     if (tech) {
       return { errors: [errorsMap().get(Errors.TECH_IS_CREATED)!] };
     }
-    const icon = await Icon.create({
-      publicLink: input.iconPath,
-      color: input.color,
-    }).save();
+
+    let icon = new Icon();
+    const iconFromDb = await Icon.findOne({
+      where: { url: input.icon.url },
+    });
+    if (iconFromDb) {
+      icon = iconFromDb;
+    } else {
+      icon = await Icon.create({
+        url: input.icon.url,
+        color: input.icon.color,
+      }).save();
+    }
+
+    let category = new Category();
+    const categoryFromDb = await Category.findOne({
+      where: { name: input.category.name },
+    });
+    if (categoryFromDb) {
+      category = categoryFromDb;
+    } else {
+      category = await Category.create({ name: input.category.name }).save();
+    }
+
     const technology = await Technology.create({
       name: input.name,
       icon,
+      category,
     }).save();
     return { entity: technology };
   }
@@ -93,7 +140,7 @@ export default class TechnologyResolver {
     }
     const technology = await Technology.findOne({
       where: { id },
-      relations: ["icon"],
+      relations: ["icon", "category"],
     });
     if (!technology) {
       return { errors: [errorsMap().get(Errors.TECH_IS_NOT_FOUND)!] };
@@ -102,9 +149,23 @@ export default class TechnologyResolver {
       technology.name = input.name;
     }
 
-    if (technology.icon.publicLink !== input.iconPath) {
+    if (
+      technology.icon.url !== input.icon.url ||
+      technology.icon.color !== input.icon.color
+    ) {
       await Icon.update(technology.icon.id, {
-        publicLink: input.iconPath,
+        url: input.icon.url,
+        color: input.icon.color,
+      });
+    }
+
+    if (
+      technology.category.name !== input.category.name ||
+      technology.category.color !== input.category.color
+    ) {
+      await Category.update(technology.category.id, {
+        name: input.category.name,
+        color: input.category.color,
       });
     }
     tech = await Technology.save(technology);
