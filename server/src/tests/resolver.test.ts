@@ -61,23 +61,22 @@ export const meQuery = `
    }`;
 
 const getOneTechMutation = `
-   query GetTechnology($name: String!){
-     getTechnology(name: $name){
+  query GetTechnology($id:Float!){
+    getTechnology(id:$id){
+      name
+      icon{
         name
-        icon{
-          url
-          color
-        }
-        category{
-          name
-          color
-        }
-     }
-   }
+      }
+      category{
+        name
+        color
+      }
+    }
+  }
    `;
 
 const createTechMutation = `
-   mutation CreateTechnology($name: String!, $icon: IconInput!, $category: CategoryInput!){
+   mutation CreateTechnology($name: String!, $icon: String!, $category: CategoryInput!){
       createTechnology(input:{name:$name, icon:$icon, category:$category}){
          errors{
             name
@@ -87,8 +86,7 @@ const createTechMutation = `
           entity{
             name
             icon{
-              url
-              color
+              name
             }
             category{
               name
@@ -99,7 +97,7 @@ const createTechMutation = `
    }`;
 
 const updateTechMutation = `
-  mutation UpdateTechnology($id: Float!, $name: String!, $icon: IconInput!, $category: CategoryInput! ){
+  mutation UpdateTechnology($id: Float!, $name: String!, $icon: String!, $category: CategoryInput! ){
     updateTechnology(input:{name:$name, icon: $icon, category: $category}, id:$id){
       errors{
         name
@@ -109,8 +107,7 @@ const updateTechMutation = `
       entity{
         name
         icon{
-          url
-          color
+          name
         }
         category{
           name
@@ -138,8 +135,7 @@ const getProjectsQuery = `
       technologies{
         name
         icon{
-          url
-          color
+          name
         }
       }
     }
@@ -181,8 +177,7 @@ const createProjectMutation = `
         technologies{
           name
           icon{
-            url
-            color
+            name
           }
           category{
             name
@@ -254,12 +249,12 @@ const mutateCreateTech = async (
 };
 
 const mutateGetOneTech = async (
-  input: TechInput,
+  id: number,
   client: ApolloServerTestClient = testClient
 ): Promise<GraphQLResponse> => {
   return client.mutate({
     mutation: getOneTechMutation,
-    variables: { name: input.name },
+    variables: { id },
   });
 };
 
@@ -416,7 +411,10 @@ const clearProjects = async () => {
 
 const createOneTechnology = async (input: TechInput): Promise<Technology> => {
   const result = await mutateCreateTech(input);
-  expect(result.data?.createTechnology.entity).toEqual(input);
+  expect(result.data?.createTechnology.entity).toEqual({
+    ...input,
+    icon: { name: input.icon },
+  });
   const tech = await Technology.findOne({
     where: { name: input.name },
   });
@@ -620,7 +618,7 @@ describe("TechResolver testing", () => {
       await checkIfUserAuthorized();
       const testTech: TechInput = {
         name: "",
-        icon: { url: "http://picture.com/1", color: "#FFFFFF" },
+        icon: "picture",
         category: { name: "Backend", color: "#FFFFFF" },
       };
       const result = await mutateCreateTech(testTech);
@@ -630,30 +628,16 @@ describe("TechResolver testing", () => {
       await clearSession();
     });
 
-    it("Error: iconPath is undefined", async () => {
+    it("Error: iconName is undefined", async () => {
       await checkIfUserAuthorized();
       const testTech: TechInput = {
         name: "React",
-        icon: { url: "", color: "#FFFFFF" },
+        icon: "",
         category: { name: "Backend", color: "#FFFFFF" },
       };
       const result = await mutateCreateTech(testTech);
       expect(result.data?.createTechnology.errors).toEqual([
-        errorsMap().get(Errors.TECH_PICTURE_PATH_EMPTY),
-      ]);
-      await clearSession();
-    });
-
-    it("Error: iconPath is invalid", async () => {
-      await checkIfUserAuthorized();
-      const testTech: TechInput = {
-        name: "React",
-        icon: { url: "http:/", color: "#FFFFFF" },
-        category: { name: "Backend", color: "#FFFFFF" },
-      };
-      const result = await mutateCreateTech(testTech);
-      expect(result.data?.createTechnology.errors).toEqual([
-        errorsMap().get(Errors.TECH_PICTURE_PATH_INVALID),
+        errorsMap().get(Errors.TECH_ICON_NAME_EMPTY),
       ]);
       await clearSession();
     });
@@ -662,11 +646,14 @@ describe("TechResolver testing", () => {
       await checkIfUserAuthorized();
       const testTech = {
         name: "React",
-        icon: { url: "http://picture.com/1", color: "#FFFFFF" },
+        icon: "picture",
         category: { name: "Backend", color: "#FFFFFF" },
       };
       const result = await mutateCreateTech(testTech);
-      expect(result.data?.createTechnology.entity).toEqual(testTech);
+      expect(result.data?.createTechnology.entity).toEqual({
+        ...testTech,
+        icon: { name: testTech.icon },
+      });
 
       const tech = await Technology.findOne({
         where: { name: testTech.name },
@@ -678,11 +665,7 @@ describe("TechResolver testing", () => {
   describe("mutation getOne() ", () => {
     it("Error: no such technology", async () => {
       await checkIfUserAuthorized();
-      const getResult = await mutateGetOneTech({
-        name: "Graphql",
-        icon: { url: "http://picture.com/1" },
-        category: { name: "Backend" },
-      });
+      const getResult = await mutateGetOneTech(-1);
       expect(getResult.data?.getTechnology).toEqual(null);
       await clearSession();
     });
@@ -691,11 +674,14 @@ describe("TechResolver testing", () => {
       await checkIfUserAuthorized();
       const testTech: TechInput = {
         name: "React",
-        icon: { url: "http://picture.com/1", color: "#FFF" },
+        icon: "picture",
         category: { name: "Backend", color: "#FFF" },
       };
       const createResult = await mutateCreateTech(testTech);
-      expect(createResult.data?.createTechnology.entity).toEqual(testTech);
+      expect(createResult.data?.createTechnology.entity).toEqual({
+        ...testTech,
+        icon: { name: testTech.icon },
+      });
       const tech = await Technology.findOne({
         where: { name: testTech.name },
         relations: ["icon", "category"],
@@ -703,9 +689,12 @@ describe("TechResolver testing", () => {
       expect(tech).toBeDefined();
       const getResult = await testClient.mutate({
         mutation: getOneTechMutation,
-        variables: { name: tech?.name },
+        variables: { id: tech?.id },
       });
-      expect(getResult.data?.getTechnology).toEqual(testTech);
+      expect(getResult.data?.getTechnology).toEqual({
+        ...testTech,
+        icon: { name: testTech.icon },
+      });
       await clearSession();
     });
   });
@@ -715,11 +704,14 @@ describe("TechResolver testing", () => {
       await checkIfUserAuthorized();
       const testEntity: TechInput = {
         name: "React",
-        icon: { url: "http://picture.com/1", color: "" },
+        icon: "picture",
         category: { name: "Backend", color: "" },
       };
       const createResult = await mutateCreateTech(testEntity);
-      expect(createResult.data?.createTechnology.entity).toEqual(testEntity);
+      expect(createResult.data?.createTechnology.entity).toEqual({
+        ...testEntity,
+        icon: { name: testEntity.icon },
+      });
       const tech = await Technology.findOne({
         where: { name: testEntity.name },
       });
@@ -728,7 +720,7 @@ describe("TechResolver testing", () => {
       const updateResult = await mutateUpdateTech(
         {
           name: "",
-          icon: { url: testEntity.icon.url, color: "#112233" },
+          icon: "picture",
           category: { name: "Backend" },
         },
         tech?.id!
@@ -743,17 +735,20 @@ describe("TechResolver testing", () => {
       await checkIfUserAuthorized();
       const testEntity: TechInput = {
         name: "React",
-        icon: { url: "http://picture.com/1", color: "" },
+        icon: "picture",
         category: { name: "Backend", color: "" },
       };
       const newEntity: TechInput = {
         name: "Graphql",
-        icon: { url: testEntity.icon.url, color: "#112233" },
+        icon: "picture",
         category: { name: "Backend", color: "#112233" },
       };
       const tech = await createOneTechnology(testEntity);
       const updateResult = await mutateUpdateTech(newEntity, tech?.id!);
-      expect(updateResult.data?.updateTechnology.entity).toEqual(newEntity);
+      expect(updateResult.data?.updateTechnology.entity).toEqual({
+        ...newEntity,
+        icon: { name: newEntity.icon },
+      });
       await clearSession();
     });
   });
@@ -769,7 +764,7 @@ describe("TechResolver testing", () => {
       await checkIfUserAuthorized();
       const tech: TechInput = {
         name: "React",
-        icon: { url: "http://picture.com/1", color: "" },
+        icon: "picture",
         category: { name: "Backend", color: "" },
       };
       const technology = await createOneTechnology(tech);
@@ -873,7 +868,7 @@ describe("ProjectResolver testing", () => {
       await checkIfUserAuthorized();
       const testTech: TechInput = {
         name: "React",
-        icon: { url: "http://picture.com/1", color: "" },
+        icon: "picture",
         category: { name: "Backend", color: "" },
       };
       const tech = await createOneTechnology(testTech);
@@ -890,7 +885,11 @@ describe("ProjectResolver testing", () => {
         status: 0,
         pictures: [{ url: testProject.pictures[0].url, primary: 1 }],
         technologies: [
-          { name: tech.name, icon: testTech.icon, category: testTech.category },
+          {
+            name: tech.name,
+            icon: { name: testTech.icon },
+            category: testTech.category,
+          },
         ],
       };
       const createProjectResult = await mutateCreateProject(testProject);
@@ -996,12 +995,12 @@ describe("ProjectResolver testing", () => {
       };
       const technology1 = await createOneTechnology({
         name: "React",
-        icon: { url: "http://picture.com/1", color: "" },
+        icon: "picture",
         category: { name: "Backend", color: "" },
       });
       const technology2 = await createOneTechnology({
         name: "Graphql",
-        icon: { url: "http://picture.com/2", color: "" },
+        icon: "another",
         category: { name: "Backend", color: "" },
       });
       const createProjectResult = await mutateCreateProject(testProject);

@@ -11,7 +11,7 @@ export enum Errors {
   EMAIL_IN_USE = "EMAIL_IN_USE",
   INVALID_CREDENTIALS = "INVALID_CREDENTIALS",
   TECH_NAME_EMPTY = "TECH_NAME_EMPTY",
-  TECH_PICTURE_PATH_EMPTY = "TECH_PICTURE_PATH_EMPTY",
+  TECH_ICON_NAME_EMPTY = "TECH_ICON_NAME_EMPTY",
   TECH_PICTURE_PATH_INVALID = "TECH_PICTURE_PATH_INVALID",
   TECH_IS_CREATED = "TECH_IS_CREATED",
   TECH_IS_NOT_FOUND = "TECH_IS_NOT_FOUND",
@@ -64,9 +64,9 @@ export const errorsMap = (): Map<string, FieldError> => {
       message: "Name should be at least 3 symbolds long",
     },
     {
-      name: Errors.TECH_PICTURE_PATH_EMPTY,
-      field: "iconPath",
-      message: "Picture path cannot be empty",
+      name: Errors.TECH_ICON_NAME_EMPTY,
+      field: "iconName",
+      message: "Icon name cannot be empty",
     },
     {
       name: Errors.TECH_PICTURE_PATH_INVALID,
@@ -160,15 +160,9 @@ export const validateTechnology = (input: TechInput): FieldError[] => {
     const error = errorsMap().get(Errors.TECH_NAME_EMPTY)!;
     errors.push(error);
   }
-  if (!input.icon.url) {
-    const error = errorsMap().get(Errors.TECH_PICTURE_PATH_EMPTY)!;
-    errors.push(error);
-  } else if (
-    !input.icon.url.match(
-      /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gm
-    )
-  ) {
-    const error = errorsMap().get(Errors.TECH_PICTURE_PATH_INVALID)!;
+
+  if (!input.icon) {
+    const error = errorsMap().get(Errors.TECH_ICON_NAME_EMPTY)!;
     errors.push(error);
   }
 

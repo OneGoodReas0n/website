@@ -8,7 +8,6 @@ import {
   JoinColumn,
   ManyToMany,
   ManyToOne,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
@@ -42,7 +41,7 @@ export default class Technology extends BaseEntity {
   @JoinColumn()
   category: Category;
 
-  @OneToOne(() => Icon, (icon) => icon.technology, { nullable: true })
+  @ManyToOne(() => Icon, (icon) => icon.technology, { nullable: true })
   @JoinColumn()
   icon: Icon;
 

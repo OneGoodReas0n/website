@@ -21,8 +21,8 @@ export default class Icon extends BaseEntity {
 
   @IsUrl()
   @Field(() => String)
-  @Column({ unique: true })
-  url!: string;
+  @Column()
+  name!: string;
 
   @Field(() => String)
   @CreateDateColumn()
@@ -31,10 +31,6 @@ export default class Icon extends BaseEntity {
   @Field(() => String)
   @UpdateDateColumn()
   updatedAt = new Date();
-
-  @Field(() => String, { nullable: true })
-  @Column({ nullable: true })
-  color!: string;
 
   @OneToOne(() => Technology, (tech) => tech.icon, { onDelete: "CASCADE" })
   technology: Technology;

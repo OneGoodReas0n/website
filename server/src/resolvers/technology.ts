@@ -26,21 +26,13 @@ class CategoryInput {
 }
 
 @InputType()
-class IconInput {
-  @Field()
-  url: string;
-  @Field({ nullable: true })
-  color?: string;
-}
-
-@InputType()
 export class TechInput {
   @Field()
   name: string;
   @Field(() => CategoryInput)
   category: CategoryInput;
-  @Field(() => IconInput)
-  icon: IconInput;
+  @Field()
+  icon: string;
 }
 
 @ObjectType()
@@ -68,8 +60,8 @@ export default class TechnologyResolver {
 
   @UseMiddleware(isAuth)
   @Query(() => Technology, { nullable: true })
-  async getTechnology(@Arg("name") name: string): Promise<Technology | null> {
-    const technology = await Technology.findOne({ where: { name } });
+  async getTechnology(@Arg("id") id: number): Promise<Technology | null> {
+    const technology = await Technology.findOne(id);
     if (!technology) {
       return null;
     }
@@ -100,14 +92,13 @@ export default class TechnologyResolver {
 
     let icon = new Icon();
     const iconFromDb = await Icon.findOne({
-      where: { url: input.icon.url },
+      where: { name: input.icon },
     });
     if (iconFromDb) {
       icon = iconFromDb;
     } else {
       icon = await Icon.create({
-        url: input.icon.url,
-        color: input.icon.color,
+        name: input.icon,
       }).save();
     }
 
@@ -154,25 +145,31 @@ export default class TechnologyResolver {
       technology.name = input.name;
     }
 
-    if (
-      technology.icon.url !== input.icon.url ||
-      technology.icon.color !== input.icon.color
-    ) {
-      await Icon.update(technology.icon.id, {
-        url: input.icon.url,
-        color: input.icon.color,
-      });
+    if (technology.icon.name !== input.icon) {
+      const icon = await Icon.findOne({ where: { name: input.icon } });
+      if (icon) {
+        technology.icon = icon;
+      } else {
+        technology.icon = await Icon.create({ name: input.icon }).save();
+      }
     }
 
     if (
       technology.category.name !== input.category.name ||
       technology.category.color !== input.category.color
     ) {
-      await Category.update(technology.category.id, {
-        name: input.category.name,
-        color: input.category.color,
+      const category = await Category.findOne({
+        where: { name: input.category.name },
       });
+      if (category) {
+        technology.category = category;
+      } else {
+        technology.category = await Category.create({
+          name: input.icon,
+        }).save();
+      }
     }
+
     tech = await Technology.save(technology);
     return { entity: tech };
   }
