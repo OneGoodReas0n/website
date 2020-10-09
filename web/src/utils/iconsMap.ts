@@ -1,9 +1,10 @@
 import { FC } from "react";
 import {
   Apollographql,
-  Graphql,
   ReactJs,
   Typescript,
+  Graphql,
+  NodeDotJs,
   Html5,
   Css3,
   Sass,
@@ -11,11 +12,13 @@ import {
   Postgresql,
   Mysql,
   Mongodb,
-  NodeDotJs,
   Trello,
   Github,
   Figma,
   Jest,
+  Redis,
+  Angularjs,
+  VueDotJs,
 } from "@icons-pack/react-simple-icons";
 
 type IconItem = {
@@ -37,9 +40,18 @@ export enum IconColor {
   "mysql" = "#4479A1",
   "mongodb" = "#47A248",
   "jest" = "#C21325",
+  "redis" = "#DC382D",
+  "angular" = "#E23237",
+  "vue" = "#4FC08D",
+  "github" = "#181717",
+  "figma" = "#F24E1E",
+  "trello" = "#0079BF",
 }
 
-export const getIconsMap = (): Map<string, FC> => {
+export const getIconsMap = (): Map<
+  string,
+  FC<{ title?: string; color?: string; size?: number; className?: string }>
+> => {
   const iconsMap = new Map<string, FC>();
   const icons: IconItem[] = [
     { name: "apollo", icon: Apollographql },
@@ -58,6 +70,9 @@ export const getIconsMap = (): Map<string, FC> => {
     { name: "github", icon: Github },
     { name: "figma", icon: Figma },
     { name: "jest", icon: Jest },
+    { name: "redis", icon: Redis },
+    { name: "angular", icon: Angularjs },
+    { name: "vue", icon: VueDotJs },
   ];
   icons.forEach((i) => {
     iconsMap.set(i.name, i.icon);
@@ -71,4 +86,21 @@ export const getColorByIconName = (name: string) => {
     colorsMap.set(color, IconColor[color]);
   }
   return colorsMap.get(name);
+};
+
+export const categoryColor = (categoryName: string) => {
+  switch (categoryName) {
+    case "backend":
+      return "#519838";
+    case "frontend":
+      return "#2CAECC";
+    case "database":
+      return "#838C91";
+    case "testing":
+      return "#B04632";
+    case "other":
+      return "##D29034";
+    default:
+      return "#fff";
+  }
 };

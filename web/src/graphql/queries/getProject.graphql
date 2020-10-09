@@ -1,0 +1,5 @@
+query getProject($id: Float!) {
+  getProject(id: $id) {
+    ...RegularProject
+  }
+}

@@ -1,0 +1,14 @@
+mutation CreateTechnology(
+  $name: String!
+  $icon: String!
+  $category: CategoryInput!
+) {
+  createTechnology(input: { name: $name, icon: $icon, category: $category }) {
+    errors {
+      ...RegularError
+    }
+    entity {
+      ...RegularTechnology
+    }
+  }
+}

@@ -1,0 +1,18 @@
+mutation UpdateTechnology(
+  $id: Float!
+  $name: String!
+  $icon: String!
+  $category: CategoryInput!
+) {
+  updateTechnology(
+    input: { name: $name, icon: $icon, category: $category }
+    id: $id
+  ) {
+    errors {
+      ...RegularError
+    }
+    entity {
+      ...RegularTechnology
+    }
+  }
+}

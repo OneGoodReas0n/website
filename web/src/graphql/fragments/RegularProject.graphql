@@ -1,0 +1,19 @@
+fragment RegularProject on Project {
+  name
+  description
+  status
+  pictures {
+    url
+    primary
+  }
+  technologies {
+    name
+    icon {
+      name
+    }
+    category {
+      name
+      color
+    }
+  }
+}

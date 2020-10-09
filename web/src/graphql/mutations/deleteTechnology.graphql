@@ -1,0 +1,3 @@
+mutation DeleteTechnology($id: Float!) {
+  deleteTechnology(id: $id)
+}

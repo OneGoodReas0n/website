@@ -4,6 +4,7 @@ import Home from "../components/Home";
 import About from "../components/About";
 import Technologies from "../components/Technologies";
 import Projects from "../components/Projects";
+import { withApollo } from "../utils/withApollo";
 
 const Index: React.FC = () => {
   return (
@@ -16,4 +17,4 @@ const Index: React.FC = () => {
   );
 };
 
-export default Index;
+export default withApollo({ ssr: true })(Index);

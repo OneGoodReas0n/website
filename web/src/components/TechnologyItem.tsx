@@ -1,23 +1,38 @@
-import { Flex, Text } from "@chakra-ui/core";
+import { Stack, Text } from "@chakra-ui/core";
 import React from "react";
-import { getIconsMap } from "../utils/iconsMap";
+import { getColorByIconName, getIconsMap } from "../utils/iconsMap";
 
 export interface TechnologyItemProps {
-  id?: number;
+  techId?: number;
   name: string;
   iconName: string;
-  svgColor?: string;
-  category: string;
+  iconColor?: string;
+  categoryName: string;
+  categoryColor?: string;
+  sepia: boolean;
 }
 
-const TechnologyItem: React.FC<TechnologyItemProps> = ({ name, iconName }) => {
-  const possibleIcon = getIconsMap().get(iconName);
-  const Icon = possibleIcon ? possibleIcon : null;
+const TechnologyItem: React.FC<TechnologyItemProps> = ({
+  name,
+  iconName,
+  sepia,
+}) => {
+  const Icon = getIconsMap().get(iconName);
+  const iconColor = getColorByIconName(iconName)
+    ? getColorByIconName(iconName)
+    : "";
   return (
-    <Flex alignItems="center" justifyContent="center">
-      <Text mr={4}>{name}</Text>
-      {Icon && <Icon size={32} />}
-    </Flex>
+    <Stack
+      alignItems="center"
+      direction="row"
+      spacing={2}
+      justifyContent="center"
+    >
+      {Icon && <Icon color={sepia ? "" : iconColor} size={32} />}
+      <Text color={sepia ? "" : iconColor} mr={4}>
+        {name}
+      </Text>
+    </Stack>
   );
 };
 
