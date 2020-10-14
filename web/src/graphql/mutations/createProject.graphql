@@ -1,4 +1,4 @@
-mutation CreateProjectMutation(
+mutation CreateProject(
   $name: String!
   $description: String
   $status: String!

@@ -231,7 +231,7 @@ export type RegularTechnologyFragment = (
   )> }
 );
 
-export type CreateProjectMutationMutationVariables = Exact<{
+export type CreateProjectMutationVariables = Exact<{
   name: Scalars['String'];
   description?: Maybe<Scalars['String']>;
   status: Scalars['String'];
@@ -240,7 +240,7 @@ export type CreateProjectMutationMutationVariables = Exact<{
 }>;
 
 
-export type CreateProjectMutationMutation = (
+export type CreateProjectMutation = (
   { __typename?: 'Mutation' }
   & { createProject: (
     { __typename?: 'ProjectResponse' }
@@ -275,12 +275,12 @@ export type CreateTechnologyMutation = (
   )> }
 );
 
-export type DeleteProjectMutationMutationVariables = Exact<{
+export type DeleteProjectMutationVariables = Exact<{
   id: Scalars['Float'];
 }>;
 
 
-export type DeleteProjectMutationMutation = (
+export type DeleteProjectMutation = (
   { __typename?: 'Mutation' }
   & Pick<Mutation, 'deleteProject'>
 );
@@ -323,7 +323,7 @@ export type LogoutMutation = (
   & Pick<Mutation, 'logout'>
 );
 
-export type UpdateProjectMutationMutationVariables = Exact<{
+export type UpdateProjectMutationVariables = Exact<{
   id: Scalars['Float'];
   name: Scalars['String'];
   description?: Maybe<Scalars['String']>;
@@ -333,7 +333,7 @@ export type UpdateProjectMutationMutationVariables = Exact<{
 }>;
 
 
-export type UpdateProjectMutationMutation = (
+export type UpdateProjectMutation = (
   { __typename?: 'Mutation' }
   & { updateProject: (
     { __typename?: 'ProjectResponse' }
@@ -469,8 +469,8 @@ export const RegularTechnologyFragmentDoc = gql`
   }
 }
     `;
-export const CreateProjectMutationDocument = gql`
-    mutation CreateProjectMutation($name: String!, $description: String, $status: String!, $pictures: [PictureObj!], $technologyNames: [String!]) {
+export const CreateProjectDocument = gql`
+    mutation CreateProject($name: String!, $description: String, $status: String!, $pictures: [PictureObj!], $technologyNames: [String!]) {
   createProject(input: {name: $name, description: $description, status: $status, pictures: $pictures, technologyNames: $technologyNames}) {
     errors {
       ...RegularError
@@ -482,20 +482,20 @@ export const CreateProjectMutationDocument = gql`
 }
     ${RegularErrorFragmentDoc}
 ${RegularProjectFragmentDoc}`;
-export type CreateProjectMutationMutationFn = Apollo.MutationFunction<CreateProjectMutationMutation, CreateProjectMutationMutationVariables>;
+export type CreateProjectMutationFn = Apollo.MutationFunction<CreateProjectMutation, CreateProjectMutationVariables>;
 
 /**
- * __useCreateProjectMutationMutation__
+ * __useCreateProjectMutation__
  *
- * To run a mutation, you first call `useCreateProjectMutationMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useCreateProjectMutationMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useCreateProjectMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateProjectMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [createProjectMutationMutation, { data, loading, error }] = useCreateProjectMutationMutation({
+ * const [createProjectMutation, { data, loading, error }] = useCreateProjectMutation({
  *   variables: {
  *      name: // value for 'name'
  *      description: // value for 'description'
@@ -505,12 +505,12 @@ export type CreateProjectMutationMutationFn = Apollo.MutationFunction<CreateProj
  *   },
  * });
  */
-export function useCreateProjectMutationMutation(baseOptions?: Apollo.MutationHookOptions<CreateProjectMutationMutation, CreateProjectMutationMutationVariables>) {
-        return Apollo.useMutation<CreateProjectMutationMutation, CreateProjectMutationMutationVariables>(CreateProjectMutationDocument, baseOptions);
+export function useCreateProjectMutation(baseOptions?: Apollo.MutationHookOptions<CreateProjectMutation, CreateProjectMutationVariables>) {
+        return Apollo.useMutation<CreateProjectMutation, CreateProjectMutationVariables>(CreateProjectDocument, baseOptions);
       }
-export type CreateProjectMutationMutationHookResult = ReturnType<typeof useCreateProjectMutationMutation>;
-export type CreateProjectMutationMutationResult = Apollo.MutationResult<CreateProjectMutationMutation>;
-export type CreateProjectMutationMutationOptions = Apollo.BaseMutationOptions<CreateProjectMutationMutation, CreateProjectMutationMutationVariables>;
+export type CreateProjectMutationHookResult = ReturnType<typeof useCreateProjectMutation>;
+export type CreateProjectMutationResult = Apollo.MutationResult<CreateProjectMutation>;
+export type CreateProjectMutationOptions = Apollo.BaseMutationOptions<CreateProjectMutation, CreateProjectMutationVariables>;
 export const CreateTechnologyDocument = gql`
     mutation CreateTechnology($name: String!, $icon: String!, $category: CategoryInput!) {
   createTechnology(input: {name: $name, icon: $icon, category: $category}) {
@@ -551,36 +551,36 @@ export function useCreateTechnologyMutation(baseOptions?: Apollo.MutationHookOpt
 export type CreateTechnologyMutationHookResult = ReturnType<typeof useCreateTechnologyMutation>;
 export type CreateTechnologyMutationResult = Apollo.MutationResult<CreateTechnologyMutation>;
 export type CreateTechnologyMutationOptions = Apollo.BaseMutationOptions<CreateTechnologyMutation, CreateTechnologyMutationVariables>;
-export const DeleteProjectMutationDocument = gql`
-    mutation DeleteProjectMutation($id: Float!) {
+export const DeleteProjectDocument = gql`
+    mutation DeleteProject($id: Float!) {
   deleteProject(id: $id)
 }
     `;
-export type DeleteProjectMutationMutationFn = Apollo.MutationFunction<DeleteProjectMutationMutation, DeleteProjectMutationMutationVariables>;
+export type DeleteProjectMutationFn = Apollo.MutationFunction<DeleteProjectMutation, DeleteProjectMutationVariables>;
 
 /**
- * __useDeleteProjectMutationMutation__
+ * __useDeleteProjectMutation__
  *
- * To run a mutation, you first call `useDeleteProjectMutationMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useDeleteProjectMutationMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useDeleteProjectMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteProjectMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [deleteProjectMutationMutation, { data, loading, error }] = useDeleteProjectMutationMutation({
+ * const [deleteProjectMutation, { data, loading, error }] = useDeleteProjectMutation({
  *   variables: {
  *      id: // value for 'id'
  *   },
  * });
  */
-export function useDeleteProjectMutationMutation(baseOptions?: Apollo.MutationHookOptions<DeleteProjectMutationMutation, DeleteProjectMutationMutationVariables>) {
-        return Apollo.useMutation<DeleteProjectMutationMutation, DeleteProjectMutationMutationVariables>(DeleteProjectMutationDocument, baseOptions);
+export function useDeleteProjectMutation(baseOptions?: Apollo.MutationHookOptions<DeleteProjectMutation, DeleteProjectMutationVariables>) {
+        return Apollo.useMutation<DeleteProjectMutation, DeleteProjectMutationVariables>(DeleteProjectDocument, baseOptions);
       }
-export type DeleteProjectMutationMutationHookResult = ReturnType<typeof useDeleteProjectMutationMutation>;
-export type DeleteProjectMutationMutationResult = Apollo.MutationResult<DeleteProjectMutationMutation>;
-export type DeleteProjectMutationMutationOptions = Apollo.BaseMutationOptions<DeleteProjectMutationMutation, DeleteProjectMutationMutationVariables>;
+export type DeleteProjectMutationHookResult = ReturnType<typeof useDeleteProjectMutation>;
+export type DeleteProjectMutationResult = Apollo.MutationResult<DeleteProjectMutation>;
+export type DeleteProjectMutationOptions = Apollo.BaseMutationOptions<DeleteProjectMutation, DeleteProjectMutationVariables>;
 export const DeleteTechnologyDocument = gql`
     mutation DeleteTechnology($id: Float!) {
   deleteTechnology(id: $id)
@@ -679,8 +679,8 @@ export function useLogoutMutation(baseOptions?: Apollo.MutationHookOptions<Logou
 export type LogoutMutationHookResult = ReturnType<typeof useLogoutMutation>;
 export type LogoutMutationResult = Apollo.MutationResult<LogoutMutation>;
 export type LogoutMutationOptions = Apollo.BaseMutationOptions<LogoutMutation, LogoutMutationVariables>;
-export const UpdateProjectMutationDocument = gql`
-    mutation UpdateProjectMutation($id: Float!, $name: String!, $description: String, $status: String!, $pictures: [PictureObj!], $technologyNames: [String!]) {
+export const UpdateProjectDocument = gql`
+    mutation UpdateProject($id: Float!, $name: String!, $description: String, $status: String!, $pictures: [PictureObj!], $technologyNames: [String!]) {
   updateProject(id: $id, input: {name: $name, description: $description, status: $status, pictures: $pictures, technologyNames: $technologyNames}) {
     errors {
       ...RegularError
@@ -692,20 +692,20 @@ export const UpdateProjectMutationDocument = gql`
 }
     ${RegularErrorFragmentDoc}
 ${RegularProjectFragmentDoc}`;
-export type UpdateProjectMutationMutationFn = Apollo.MutationFunction<UpdateProjectMutationMutation, UpdateProjectMutationMutationVariables>;
+export type UpdateProjectMutationFn = Apollo.MutationFunction<UpdateProjectMutation, UpdateProjectMutationVariables>;
 
 /**
- * __useUpdateProjectMutationMutation__
+ * __useUpdateProjectMutation__
  *
- * To run a mutation, you first call `useUpdateProjectMutationMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useUpdateProjectMutationMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useUpdateProjectMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateProjectMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [updateProjectMutationMutation, { data, loading, error }] = useUpdateProjectMutationMutation({
+ * const [updateProjectMutation, { data, loading, error }] = useUpdateProjectMutation({
  *   variables: {
  *      id: // value for 'id'
  *      name: // value for 'name'
@@ -716,12 +716,12 @@ export type UpdateProjectMutationMutationFn = Apollo.MutationFunction<UpdateProj
  *   },
  * });
  */
-export function useUpdateProjectMutationMutation(baseOptions?: Apollo.MutationHookOptions<UpdateProjectMutationMutation, UpdateProjectMutationMutationVariables>) {
-        return Apollo.useMutation<UpdateProjectMutationMutation, UpdateProjectMutationMutationVariables>(UpdateProjectMutationDocument, baseOptions);
+export function useUpdateProjectMutation(baseOptions?: Apollo.MutationHookOptions<UpdateProjectMutation, UpdateProjectMutationVariables>) {
+        return Apollo.useMutation<UpdateProjectMutation, UpdateProjectMutationVariables>(UpdateProjectDocument, baseOptions);
       }
-export type UpdateProjectMutationMutationHookResult = ReturnType<typeof useUpdateProjectMutationMutation>;
-export type UpdateProjectMutationMutationResult = Apollo.MutationResult<UpdateProjectMutationMutation>;
-export type UpdateProjectMutationMutationOptions = Apollo.BaseMutationOptions<UpdateProjectMutationMutation, UpdateProjectMutationMutationVariables>;
+export type UpdateProjectMutationHookResult = ReturnType<typeof useUpdateProjectMutation>;
+export type UpdateProjectMutationResult = Apollo.MutationResult<UpdateProjectMutation>;
+export type UpdateProjectMutationOptions = Apollo.BaseMutationOptions<UpdateProjectMutation, UpdateProjectMutationVariables>;
 export const UpdateTechnologyDocument = gql`
     mutation UpdateTechnology($id: Float!, $name: String!, $icon: String!, $category: CategoryInput!) {
   updateTechnology(input: {name: $name, icon: $icon, category: $category}, id: $id) {
@@ -797,7 +797,7 @@ export type GetProjectQueryHookResult = ReturnType<typeof useGetProjectQuery>;
 export type GetProjectLazyQueryHookResult = ReturnType<typeof useGetProjectLazyQuery>;
 export type GetProjectQueryResult = Apollo.QueryResult<GetProjectQuery, GetProjectQueryVariables>;
 export const GetProjectsDocument = gql`
-    query GetProjects {
+    query getProjects {
   getProjects {
     ...RegularProject
   }
@@ -829,7 +829,7 @@ export type GetProjectsQueryHookResult = ReturnType<typeof useGetProjectsQuery>;
 export type GetProjectsLazyQueryHookResult = ReturnType<typeof useGetProjectsLazyQuery>;
 export type GetProjectsQueryResult = Apollo.QueryResult<GetProjectsQuery, GetProjectsQueryVariables>;
 export const GetTechnologiesDocument = gql`
-    query GetTechnologies {
+    query getTechnologies {
   getTechnologies {
     ...RegularTechnology
   }
@@ -861,7 +861,7 @@ export type GetTechnologiesQueryHookResult = ReturnType<typeof useGetTechnologie
 export type GetTechnologiesLazyQueryHookResult = ReturnType<typeof useGetTechnologiesLazyQuery>;
 export type GetTechnologiesQueryResult = Apollo.QueryResult<GetTechnologiesQuery, GetTechnologiesQueryVariables>;
 export const GetTechnologyDocument = gql`
-    query GetTechnology($id: Float!) {
+    query getTechnology($id: Float!) {
   getTechnology(id: $id) {
     ...RegularTechnology
   }

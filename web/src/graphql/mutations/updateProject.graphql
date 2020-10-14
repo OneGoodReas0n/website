@@ -1,4 +1,4 @@
-mutation UpdateProjectMutation(
+mutation UpdateProject(
   $id: Float!
   $name: String!
   $description: String

@@ -1,4 +1,4 @@
-query GetTechnologies {
+query getTechnologies {
   getTechnologies {
     ...RegularTechnology
   }

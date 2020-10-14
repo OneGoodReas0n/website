@@ -1,4 +1,4 @@
-query GetTechnology($id: Float!) {
+query getTechnology($id: Float!) {
   getTechnology(id: $id) {
     ...RegularTechnology
   }
