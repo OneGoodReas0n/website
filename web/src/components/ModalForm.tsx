@@ -9,7 +9,7 @@ import {
 } from "@chakra-ui/core";
 import { SlideFade } from "@chakra-ui/transition";
 import React from "react";
-import ProjectForm from "./ProjectForm";
+import CreateProjectForm from "./CreateProjectForm";
 import CreateTechnologyForm from "./CreateTechnologyForm";
 import UpdateTechnologyForm from "./UpdateTechnologyForm";
 
@@ -53,7 +53,7 @@ const ModalForm: React.FC<ModalFormProps> = ({
                   <ModalCloseButton onClick={() => setOpen(false)} />
                   <ModalBody pb={8}>
                     {variant === "project" ? (
-                      <ProjectForm setOpen={setOpen} />
+                      <CreateProjectForm setOpen={setOpen} />
                     ) : action === "create" ? (
                       <CreateTechnologyForm setOpen={setOpen} />
                     ) : (
