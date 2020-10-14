@@ -6,16 +6,14 @@ export interface TechnologyItemProps {
   techId?: number;
   name: string;
   iconName: string;
-  iconColor?: string;
   categoryName: string;
-  categoryColor?: string;
-  sepia: boolean;
+  sepia?: boolean;
 }
 
 const TechnologyItem: React.FC<TechnologyItemProps> = ({
   name,
   iconName,
-  sepia,
+  sepia = false,
 }) => {
   const Icon = getIconsMap().get(iconName);
   const iconColor = getColorByIconName(iconName)
