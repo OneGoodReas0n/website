@@ -1,118 +1,81 @@
+import { Box, Skeleton, Stack, Text, Flex } from "@chakra-ui/core";
 import React from "react";
-import { Box, Heading, Text } from "@chakra-ui/core";
+import { useGetTechnologiesQuery } from "../generate/graphql";
+import Layout from "./Layout";
 import Slider from "./Slider";
-import TechnologyItem, { TechnologyItemProps } from "./TechnologyItem";
+import TechnologyItem from "./TechnologyItem";
 import Title from "./Title";
 
 export interface TechnologiesProps {}
 
 const Technologies: React.FC<TechnologiesProps> = ({}) => {
-  const backTechnologiesData: TechnologyItemProps[] = [
-    {
-      id: 1,
-      name: "NodeJS",
-      iconName: "nodejs",
-    },
-    {
-      id: 2,
-      name: "Typescript",
-      iconName: "typescript",
-    },
-    {
-      id: 3,
-      name: "Apollo",
-      iconName: "apollo",
-    },
-    {
-      id: 4,
-      name: "GraphQL",
-      iconName: "graphql",
-    },
-  ];
-  const frontTechnologiesData: TechnologyItemProps[] = [
-    {
-      id: 1,
-      name: "React",
-      iconName: "react",
-    },
-    {
-      id: 2,
-      name: "Typescript-React",
-      iconName: "typescript",
-    },
-    {
-      id: 3,
-      name: "VanillaJS",
-      iconName: "vanillajs",
-    },
-    {
-      id: 4,
-      name: "HTML5",
-      iconName: "html",
-    },
-    {
-      id: 5,
-      name: "CSS3",
-      iconName: "css",
-    },
-    {
-      id: 6,
-      name: "SASS",
-      iconName: "sass",
-    },
-  ];
-  const databaseData: TechnologyItemProps[] = [
-    { id: 1, name: "PostgreSQL", iconName: "postgresql" },
-    { id: 2, name: "MySQL", iconName: "mysql" },
-    { id: 3, name: "MongoDB", iconName: "mongodb" },
-  ];
+  const { data, loading } = useGetTechnologiesQuery();
+  const categories = ["backend", "frontend", "database", "testing", "other"];
 
-  const otherData: TechnologyItemProps[] = [
-    { id: 1, name: "Github", iconName: "github" },
-    { id: 2, name: "Trello", iconName: "trello" },
-    { id: 3, name: "Figma", iconName: "figma" },
-  ];
-  const backTechnologies = (() => {
-    return backTechnologiesData.map((tech) => (
-      <TechnologyItem key={tech.id} name={tech.name} iconName={tech.iconName} />
-    ));
-  })();
-
-  const frontTechnologies = (() => {
-    return frontTechnologiesData.map((tech) => (
-      <TechnologyItem key={tech.id} name={tech.name} iconName={tech.iconName} />
-    ));
-  })();
-  const databaseTechnologies = (() => {
-    return databaseData.map((tech) => (
-      <TechnologyItem key={tech.id} name={tech.name} iconName={tech.iconName} />
-    ));
-  })();
-  const otherTechnologies = (() => {
-    return otherData.map((tech) => (
-      <TechnologyItem key={tech.id} name={tech.name} iconName={tech.iconName} />
-    ));
-  })();
-  return (
-    <Box minHeight="500px" id="technologies">
-      <Title title="Technologies" />
-      <Box overflow="hidden" w="60%" mx="auto">
-        <Slider
-          children={backTechnologies}
-          numOfElemsToShow={3}
-          scrollDelay={2000}
-        />
-        <Slider
-          children={frontTechnologies}
-          numOfElemsToShow={3}
-          scrollDelay={1800}
-        />
-        <Slider children={databaseTechnologies} numOfElemsToShow={3} />
-
-        <Slider children={otherTechnologies} numOfElemsToShow={3} />
+  if (loading) {
+    return (
+      <Box minHeight="500px" id="technologies">
+        <Title title="Technologies" />
+        <Layout size="middle"></Layout>
+        {categories.map((cat) => {
+          return (
+            <Stack key={cat}>
+              <Skeleton>Item</Skeleton>
+              <Skeleton>Item</Skeleton>
+              <Skeleton>Item</Skeleton>
+            </Stack>
+          );
+        })}
       </Box>
-    </Box>
-  );
+    );
+  } else if (!data && !loading) {
+    return (
+      <Box>
+        <Text>Something went wrong </Text>
+      </Box>
+    );
+  } else {
+    return (
+      <Box minHeight="500px" id="technologies">
+        <Title title="Technologies" />
+        <Layout size="middle">
+          {categories.map((category, index) => {
+            const technologiesSection = (() => {
+              return data?.getTechnologies
+                .filter((el) => el.category?.name.toLowerCase() === category)
+                .map((tech) => (
+                  <TechnologyItem
+                    key={tech.id}
+                    categoryName={
+                      tech.category?.name ? tech.category?.name : ""
+                    }
+                    iconName={tech.icon?.name ? tech.icon?.name : ""}
+                    name={tech.name}
+                    techId={tech.id}
+                    sepia={true}
+                  />
+                ));
+            })();
+            if (technologiesSection!.length > 3) {
+              return (
+                <Slider
+                  key={category}
+                  children={technologiesSection}
+                  numOfElemsToShow={3}
+                  scrollDelay={2000 + index * 100}
+                />
+              );
+            }
+            return (
+              <Flex key={category} mt={12} justifyContent="space-around">
+                {technologiesSection}
+              </Flex>
+            );
+          })}
+        </Layout>
+      </Box>
+    );
+  }
 };
 
 export default Technologies;

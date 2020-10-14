@@ -1,0 +1,24 @@
+mutation CreateProjectMutation(
+  $name: String!
+  $description: String
+  $status: String!
+  $pictures: [PictureObj!]
+  $technologyNames: [String!]
+) {
+  createProject(
+    input: {
+      name: $name
+      description: $description
+      status: $status
+      pictures: $pictures
+      technologyNames: $technologyNames
+    }
+  ) {
+    errors {
+      ...RegularError
+    }
+    entity {
+      ...RegularProject
+    }
+  }
+}

@@ -1,12 +1,12 @@
-import React from "react";
-import { Heading, Box, Stack, Flex, Text, Link } from "@chakra-ui/core";
-import Layout from "../components/Layout";
-import SectionSnippet from "../components/SectionSnippet";
+import { Box, Heading, Link, Stack, Text } from "@chakra-ui/core";
 import NextLink from "next/link";
-import { useMeQuery } from "../generate/graphql";
 import { useRouter } from "next/router";
-import { withApollo } from "../utils/withApollo";
+import React from "react";
+import Layout from "../components/Layout";
 import Navbar from "../components/Navbar";
+import SectionSnippet from "../components/SectionSnippet";
+import { useMeQuery } from "../generate/graphql";
+import { withApollo } from "../utils/withApollo";
 
 export interface DashboardProps {}
 
@@ -14,7 +14,7 @@ const Dashboard: React.FC<DashboardProps> = ({}) => {
   const router = useRouter();
   const { data, loading } = useMeQuery();
   if (loading) {
-    // Loading slider
+    // Loading spinner
   } else if (data && !loading) {
     if (!data.me) {
       router.push("/");

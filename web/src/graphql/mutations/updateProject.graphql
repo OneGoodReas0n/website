@@ -1,0 +1,26 @@
+mutation UpdateProjectMutation(
+  $id: Float!
+  $name: String!
+  $description: String
+  $status: String!
+  $pictures: [PictureObj!]
+  $technologyNames: [String!]
+) {
+  updateProject(
+    id: $id
+    input: {
+      name: $name
+      description: $description
+      status: $status
+      pictures: $pictures
+      technologyNames: $technologyNames
+    }
+  ) {
+    errors {
+      ...RegularError
+    }
+    entity {
+      ...RegularProject
+    }
+  }
+}
