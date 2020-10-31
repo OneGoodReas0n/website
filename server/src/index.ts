@@ -7,14 +7,28 @@ import Redis from "ioredis";
 import "reflect-metadata";
 import { __prod__, COOKIE_NAME } from "./consts";
 import { createApolloServer } from "./utils/createApolloServer";
-import { createORMConnection } from "./utils/createORMConnection";
+import { createConnection } from "typeorm";
+import path from "path";
+import User from "./entities/User";
+import Project from "./entities/Project";
+import Category from "./entities/Category";
+import Icon from "./entities/Icon";
+import Picture from "./entities/Picture";
+import Technology from "./entities/Technology";
 
 const PORT = process.env.PORT;
 
 (async () => {
   const app = express();
 
-  await createORMConnection();
+  await createConnection({
+    type: "postgres",
+    url: process.env.DATABASE_URL,
+    logging: true,
+    synchronize: true,
+    migrations: [path.join(__dirname, "./migrations/*")],
+    entities: [User, Project, Category, Icon, Picture, Technology],
+  });
 
   let RedisStore = connectRedis(session);
   let redisClient = new Redis(process.env.REDIS_URL);
@@ -31,7 +45,7 @@ const PORT = process.env.PORT;
         httpOnly: true,
         secure: __prod__,
         sameSite: "lax",
-        domain: __prod__ ? "http://localhost:3000" : "",
+        domain: __prod__ ? process.env.CORS_ORIGIN : "",
       },
       saveUninitialized: false,
       resave: false,

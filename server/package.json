@@ -9,6 +9,7 @@
     "dev": "NODE_ENV=development nodemon dist/index.js",
     "gen-types": "npx gen-env-types .env -o src/env.d.ts -e .",
     "test": "NODE_ENV=test jest",
+    "build": "tsc",
     "migration:gen": "yarn typeorm -c development migration:generate -n Init",
     "migration:down": "yarn typeorm -c development migration:revert",
     "migration:up": "yarn typeorm -c development migration:run"
