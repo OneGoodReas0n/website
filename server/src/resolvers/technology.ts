@@ -58,7 +58,6 @@ export default class TechnologyResolver {
     return tech?.category;
   }
 
-  @UseMiddleware(isAuth)
   @Query(() => Technology, { nullable: true })
   async getTechnology(@Arg("id") id: number): Promise<Technology | null> {
     const technology = await Technology.findOne(id);
@@ -68,7 +67,6 @@ export default class TechnologyResolver {
     return technology;
   }
 
-  @UseMiddleware(isAuth)
   @Query(() => [Technology])
   async getTechnologies(): Promise<Technology[]> {
     const technologies = await Technology.find({});

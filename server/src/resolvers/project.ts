@@ -90,7 +90,6 @@ export default class TechnologyResolver {
     return currentProject?.technologies;
   }
 
-  @UseMiddleware(isAuth)
   @Query(() => Project, { nullable: true })
   async getProject(@Arg("id") id: number): Promise<Project | null> {
     const project = await Project.findOne(id);
@@ -100,7 +99,6 @@ export default class TechnologyResolver {
     return project;
   }
 
-  @UseMiddleware(isAuth)
   @Query(() => [Project])
   async getProjects(): Promise<Project[]> {
     const projects = await Project.find();
