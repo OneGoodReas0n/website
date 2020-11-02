@@ -14,6 +14,7 @@ export type Scalars = {
 export type Query = {
   __typename?: 'Query';
   me?: Maybe<User>;
+  getUsers?: Maybe<Array<User>>;
   getTechnology?: Maybe<Technology>;
   getTechnologies: Array<Technology>;
   getProject?: Maybe<Project>;
@@ -202,7 +203,7 @@ export type RegularErrorFragment = (
 
 export type RegularProjectFragment = (
   { __typename?: 'Project' }
-  & Pick<Project, 'name' | 'description' | 'status'>
+  & Pick<Project, 'id' | 'name' | 'description' | 'status'>
   & { pictures?: Maybe<Array<(
     { __typename?: 'Picture' }
     & Pick<Picture, 'url' | 'primary'>
@@ -232,11 +233,7 @@ export type RegularTechnologyFragment = (
 );
 
 export type CreateProjectMutationVariables = Exact<{
-  name: Scalars['String'];
-  description?: Maybe<Scalars['String']>;
-  status: Scalars['String'];
-  pictures?: Maybe<Array<PictureObj>>;
-  technologyNames?: Maybe<Array<Scalars['String']>>;
+  input: ProjectInput;
 }>;
 
 
@@ -255,9 +252,7 @@ export type CreateProjectMutation = (
 );
 
 export type CreateTechnologyMutationVariables = Exact<{
-  name: Scalars['String'];
-  icon: Scalars['String'];
-  category: CategoryInput;
+  input: TechInput;
 }>;
 
 
@@ -323,13 +318,29 @@ export type LogoutMutation = (
   & Pick<Mutation, 'logout'>
 );
 
+export type RegisterMutationVariables = Exact<{
+  email: Scalars['String'];
+  password: Scalars['String'];
+}>;
+
+
+export type RegisterMutation = (
+  { __typename?: 'Mutation' }
+  & { register: (
+    { __typename?: 'UserResponse' }
+    & { errors?: Maybe<Array<(
+      { __typename?: 'FieldError' }
+      & Pick<FieldError, 'field' | 'message'>
+    )>>, entity?: Maybe<(
+      { __typename?: 'User' }
+      & Pick<User, 'email'>
+    )> }
+  ) }
+);
+
 export type UpdateProjectMutationVariables = Exact<{
   id: Scalars['Float'];
-  name: Scalars['String'];
-  description?: Maybe<Scalars['String']>;
-  status: Scalars['String'];
-  pictures?: Maybe<Array<PictureObj>>;
-  technologyNames?: Maybe<Array<Scalars['String']>>;
+  input: ProjectInput;
 }>;
 
 
@@ -349,9 +360,7 @@ export type UpdateProjectMutation = (
 
 export type UpdateTechnologyMutationVariables = Exact<{
   id: Scalars['Float'];
-  name: Scalars['String'];
-  icon: Scalars['String'];
-  category: CategoryInput;
+  input: TechInput;
 }>;
 
 
@@ -417,6 +426,17 @@ export type GetTechnologyQuery = (
   )> }
 );
 
+export type GetUsersQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetUsersQuery = (
+  { __typename?: 'Query' }
+  & { getUsers?: Maybe<Array<(
+    { __typename?: 'User' }
+    & Pick<User, 'email'>
+  )>> }
+);
+
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -437,6 +457,7 @@ export const RegularErrorFragmentDoc = gql`
     `;
 export const RegularProjectFragmentDoc = gql`
     fragment RegularProject on Project {
+  id
   name
   description
   status
@@ -470,8 +491,8 @@ export const RegularTechnologyFragmentDoc = gql`
 }
     `;
 export const CreateProjectDocument = gql`
-    mutation CreateProject($name: String!, $description: String, $status: String!, $pictures: [PictureObj!], $technologyNames: [String!]) {
-  createProject(input: {name: $name, description: $description, status: $status, pictures: $pictures, technologyNames: $technologyNames}) {
+    mutation CreateProject($input: ProjectInput!) {
+  createProject(input: $input) {
     errors {
       ...RegularError
     }
@@ -497,11 +518,7 @@ export type CreateProjectMutationFn = Apollo.MutationFunction<CreateProjectMutat
  * @example
  * const [createProjectMutation, { data, loading, error }] = useCreateProjectMutation({
  *   variables: {
- *      name: // value for 'name'
- *      description: // value for 'description'
- *      status: // value for 'status'
- *      pictures: // value for 'pictures'
- *      technologyNames: // value for 'technologyNames'
+ *      input: // value for 'input'
  *   },
  * });
  */
@@ -512,8 +529,8 @@ export type CreateProjectMutationHookResult = ReturnType<typeof useCreateProject
 export type CreateProjectMutationResult = Apollo.MutationResult<CreateProjectMutation>;
 export type CreateProjectMutationOptions = Apollo.BaseMutationOptions<CreateProjectMutation, CreateProjectMutationVariables>;
 export const CreateTechnologyDocument = gql`
-    mutation CreateTechnology($name: String!, $icon: String!, $category: CategoryInput!) {
-  createTechnology(input: {name: $name, icon: $icon, category: $category}) {
+    mutation CreateTechnology($input: TechInput!) {
+  createTechnology(input: $input) {
     errors {
       ...RegularError
     }
@@ -539,9 +556,7 @@ export type CreateTechnologyMutationFn = Apollo.MutationFunction<CreateTechnolog
  * @example
  * const [createTechnologyMutation, { data, loading, error }] = useCreateTechnologyMutation({
  *   variables: {
- *      name: // value for 'name'
- *      icon: // value for 'icon'
- *      category: // value for 'category'
+ *      input: // value for 'input'
  *   },
  * });
  */
@@ -679,9 +694,48 @@ export function useLogoutMutation(baseOptions?: Apollo.MutationHookOptions<Logou
 export type LogoutMutationHookResult = ReturnType<typeof useLogoutMutation>;
 export type LogoutMutationResult = Apollo.MutationResult<LogoutMutation>;
 export type LogoutMutationOptions = Apollo.BaseMutationOptions<LogoutMutation, LogoutMutationVariables>;
+export const RegisterDocument = gql`
+    mutation Register($email: String!, $password: String!) {
+  register(input: {email: $email, password: $password}) {
+    errors {
+      field
+      message
+    }
+    entity {
+      email
+    }
+  }
+}
+    `;
+export type RegisterMutationFn = Apollo.MutationFunction<RegisterMutation, RegisterMutationVariables>;
+
+/**
+ * __useRegisterMutation__
+ *
+ * To run a mutation, you first call `useRegisterMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRegisterMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [registerMutation, { data, loading, error }] = useRegisterMutation({
+ *   variables: {
+ *      email: // value for 'email'
+ *      password: // value for 'password'
+ *   },
+ * });
+ */
+export function useRegisterMutation(baseOptions?: Apollo.MutationHookOptions<RegisterMutation, RegisterMutationVariables>) {
+        return Apollo.useMutation<RegisterMutation, RegisterMutationVariables>(RegisterDocument, baseOptions);
+      }
+export type RegisterMutationHookResult = ReturnType<typeof useRegisterMutation>;
+export type RegisterMutationResult = Apollo.MutationResult<RegisterMutation>;
+export type RegisterMutationOptions = Apollo.BaseMutationOptions<RegisterMutation, RegisterMutationVariables>;
 export const UpdateProjectDocument = gql`
-    mutation UpdateProject($id: Float!, $name: String!, $description: String, $status: String!, $pictures: [PictureObj!], $technologyNames: [String!]) {
-  updateProject(id: $id, input: {name: $name, description: $description, status: $status, pictures: $pictures, technologyNames: $technologyNames}) {
+    mutation UpdateProject($id: Float!, $input: ProjectInput!) {
+  updateProject(id: $id, input: $input) {
     errors {
       ...RegularError
     }
@@ -708,11 +762,7 @@ export type UpdateProjectMutationFn = Apollo.MutationFunction<UpdateProjectMutat
  * const [updateProjectMutation, { data, loading, error }] = useUpdateProjectMutation({
  *   variables: {
  *      id: // value for 'id'
- *      name: // value for 'name'
- *      description: // value for 'description'
- *      status: // value for 'status'
- *      pictures: // value for 'pictures'
- *      technologyNames: // value for 'technologyNames'
+ *      input: // value for 'input'
  *   },
  * });
  */
@@ -723,8 +773,8 @@ export type UpdateProjectMutationHookResult = ReturnType<typeof useUpdateProject
 export type UpdateProjectMutationResult = Apollo.MutationResult<UpdateProjectMutation>;
 export type UpdateProjectMutationOptions = Apollo.BaseMutationOptions<UpdateProjectMutation, UpdateProjectMutationVariables>;
 export const UpdateTechnologyDocument = gql`
-    mutation UpdateTechnology($id: Float!, $name: String!, $icon: String!, $category: CategoryInput!) {
-  updateTechnology(input: {name: $name, icon: $icon, category: $category}, id: $id) {
+    mutation UpdateTechnology($id: Float!, $input: TechInput!) {
+  updateTechnology(input: $input, id: $id) {
     errors {
       ...RegularError
     }
@@ -751,9 +801,7 @@ export type UpdateTechnologyMutationFn = Apollo.MutationFunction<UpdateTechnolog
  * const [updateTechnologyMutation, { data, loading, error }] = useUpdateTechnologyMutation({
  *   variables: {
  *      id: // value for 'id'
- *      name: // value for 'name'
- *      icon: // value for 'icon'
- *      category: // value for 'category'
+ *      input: // value for 'input'
  *   },
  * });
  */
@@ -893,6 +941,38 @@ export function useGetTechnologyLazyQuery(baseOptions?: Apollo.LazyQueryHookOpti
 export type GetTechnologyQueryHookResult = ReturnType<typeof useGetTechnologyQuery>;
 export type GetTechnologyLazyQueryHookResult = ReturnType<typeof useGetTechnologyLazyQuery>;
 export type GetTechnologyQueryResult = Apollo.QueryResult<GetTechnologyQuery, GetTechnologyQueryVariables>;
+export const GetUsersDocument = gql`
+    query GetUsers {
+  getUsers {
+    email
+  }
+}
+    `;
+
+/**
+ * __useGetUsersQuery__
+ *
+ * To run a query within a React component, call `useGetUsersQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetUsersQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetUsersQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetUsersQuery(baseOptions?: Apollo.QueryHookOptions<GetUsersQuery, GetUsersQueryVariables>) {
+        return Apollo.useQuery<GetUsersQuery, GetUsersQueryVariables>(GetUsersDocument, baseOptions);
+      }
+export function useGetUsersLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetUsersQuery, GetUsersQueryVariables>) {
+          return Apollo.useLazyQuery<GetUsersQuery, GetUsersQueryVariables>(GetUsersDocument, baseOptions);
+        }
+export type GetUsersQueryHookResult = ReturnType<typeof useGetUsersQuery>;
+export type GetUsersLazyQueryHookResult = ReturnType<typeof useGetUsersLazyQuery>;
+export type GetUsersQueryResult = Apollo.QueryResult<GetUsersQuery, GetUsersQueryVariables>;
 export const MeDocument = gql`
     query me {
   me {

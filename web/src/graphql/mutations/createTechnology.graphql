@@ -1,9 +1,5 @@
-mutation CreateTechnology(
-  $name: String!
-  $icon: String!
-  $category: CategoryInput!
-) {
-  createTechnology(input: { name: $name, icon: $icon, category: $category }) {
+mutation CreateTechnology($input: TechInput!) {
+  createTechnology(input: $input) {
     errors {
       ...RegularError
     }

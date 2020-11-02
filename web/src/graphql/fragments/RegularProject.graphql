@@ -1,4 +1,5 @@
 fragment RegularProject on Project {
+  id
   name
   description
   status

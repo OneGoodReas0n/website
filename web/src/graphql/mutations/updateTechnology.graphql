@@ -1,13 +1,5 @@
-mutation UpdateTechnology(
-  $id: Float!
-  $name: String!
-  $icon: String!
-  $category: CategoryInput!
-) {
-  updateTechnology(
-    input: { name: $name, icon: $icon, category: $category }
-    id: $id
-  ) {
+mutation UpdateTechnology($id: Float!, $input: TechInput!) {
+  updateTechnology(input: $input, id: $id) {
     errors {
       ...RegularError
     }
