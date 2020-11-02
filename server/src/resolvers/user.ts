@@ -38,6 +38,12 @@ export default class UserResolver {
     return user === undefined ? null : user;
   }
 
+  @Query(() => [User], { nullable: true })
+  async getUsers(): Promise<User[]> {
+    const users = await User.find();
+    return users;
+  }
+
   @Mutation(() => UserResponse)
   async login(
     @Arg("input") input: UserInput,
@@ -60,7 +66,9 @@ export default class UserResolver {
       };
     }
 
-    process.env.NODE_ENV !== "test" ? (req.session.userId = user.id) : "";
+    if (process.env.NODE_ENV !== "test") {
+      req.session.userId = user.id;
+    }
 
     return {
       entity: user,
@@ -105,7 +113,10 @@ export default class UserResolver {
       password: hashedPassword,
     }).save();
 
-    process.env.NODE_ENV !== "test" ? (req.session.userId = user.id) : "";
+    if (process.env.NODE_ENV !== "test") {
+      req.session.userId = user.id;
+    }
+
     return {
       entity: user,
     };

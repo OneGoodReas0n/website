@@ -23,7 +23,7 @@ const PORT = process.env.PORT;
 
   await createConnection({
     type: "postgres",
-    url: process.env.DATABASE_URL,
+    url: __prod__ ? process.env.DATABASE_URL : process.env.DEV_DATABASE_URL,
     logging: true,
     synchronize: true,
     migrations: [path.join(__dirname, "./migrations/*")],
@@ -31,9 +31,18 @@ const PORT = process.env.PORT;
   });
 
   let RedisStore = connectRedis(session);
-  let redisClient = new Redis(process.env.REDIS_URL);
+  let redisClient = new Redis(
+    __prod__ ? process.env.REDIS_URL : process.env.DEV_REDIS_URL
+  );
 
-  app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
+  app.set("trust proxy", 1);
+
+  app.use(
+    cors({
+      origin: __prod__ ? process.env.CORS_ORIGIN : "http://localhost:3000",
+      credentials: true,
+    })
+  );
 
   app.use(
     session({
@@ -41,11 +50,11 @@ const PORT = process.env.PORT;
       secret: process.env.SECRET,
       store: new RedisStore({ client: redisClient, disableTouch: true }),
       cookie: {
-        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 day
+        maxAge: 1000 * 60 * 60 * 24 * 7,
         httpOnly: true,
-        secure: __prod__,
+        secure: false,
         sameSite: "lax",
-        domain: __prod__ ? process.env.CORS_ORIGIN : "",
+        domain: __prod__ ? process.env.DOMAIN : "",
       },
       saveUninitialized: false,
       resave: false,
