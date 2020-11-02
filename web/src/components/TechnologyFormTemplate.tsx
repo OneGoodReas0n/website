@@ -1,7 +1,7 @@
 import React from "react";
 import { Flex, FormLabel, Select, Stack, Button, Box } from "@chakra-ui/core";
 import { InputField } from "./InputField";
-import { setIconList } from "../utils/setIconList";
+import { IconColor } from "../utils/iconsMap";
 
 export interface TechnologyFormTemplateProps {
   values: any;
@@ -28,7 +28,16 @@ const TechnologyFormTemplate: React.FC<TechnologyFormTemplateProps> = ({
   setModalOpen,
   variant,
 }) => {
-  setIconList("iconName");
+  const getIconList = () => {
+    const iconNames: string[] = [];
+    for (let iconName in IconColor) {
+      iconNames.push(iconName);
+    }
+    return iconNames;
+  };
+
+  const icons = getIconList();
+
   return (
     <Box>
       <Flex direction="column">
@@ -55,7 +64,14 @@ const TechnologyFormTemplate: React.FC<TechnologyFormTemplateProps> = ({
         </Box>
         <Box mt={4}>
           <Stack spacing={10} direction="row">
-            <InputField placeholder="Icon name" label="Icon" name="iconName" />
+            <InputField
+              placeholder="Icon name"
+              label="Icon"
+              name="iconName"
+              variant="datalist"
+              items={icons}
+              listName="technologies"
+            />
           </Stack>
         </Box>
       </Flex>

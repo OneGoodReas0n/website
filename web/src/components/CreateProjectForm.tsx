@@ -21,7 +21,6 @@ import {
   useGetTechnologiesQuery,
 } from "../generate/graphql";
 import { cutElementFromArr } from "../utils/cutElementFromArr";
-import { setTechnologiesList } from "../utils/setTechnologiesList";
 import { errorMap } from "../utils/validation";
 import { InputField } from "./InputField";
 import LoadingSpinner from "./LoadingSpinner";
@@ -59,7 +58,6 @@ const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
   if (technologies?.getTechnologies) {
     techNames = technologies?.getTechnologies.map((tech) => tech.name);
   }
-  setTechnologiesList("technologyName", techNames);
   return (
     <Box {...options}>
       <Formik
@@ -142,7 +140,6 @@ const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
                             values.technologyName
                           );
 
-                          setTechnologiesList("technologyName", techNames);
                           addedTechnologies.push(values.technologyName);
                           setFieldValue("technologies", addedTechnologies);
                           setFieldValue("technologyName", "");
@@ -172,7 +169,7 @@ const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
                               index
                             );
                             techNames.push(elem);
-                            setTechnologiesList("technologyName", techNames);
+
                             setFieldTouched("closeBtn", true);
                           }}
                         />

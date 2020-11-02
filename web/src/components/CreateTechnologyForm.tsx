@@ -1,6 +1,6 @@
 import { Box, BoxProps, useToast } from "@chakra-ui/core";
 import { Form, Formik } from "formik";
-import React from "react";
+import React, { useState } from "react";
 import { useCreateTechnologyMutation } from "../generate/graphql";
 import { categoryColor, IconColor } from "../utils/iconsMap";
 import { errorMap } from "../utils/validation";
@@ -18,24 +18,6 @@ const CreateTechnologyForm: React.FC<CreateTechnologyFormProps> = ({
   const [createTechnology] = useCreateTechnologyMutation();
   const toast = useToast();
 
-  const setIconList = () => {
-    const iconNames = [];
-    const input = document.getElementById("iconName");
-    for (let iconName in IconColor) {
-      iconNames.push(iconName);
-    }
-    const datalist = document.createElement("datalist");
-    datalist.id = "icons";
-    input?.setAttribute("list", datalist.id);
-    iconNames.sort();
-    iconNames.forEach((name) => {
-      const option = document.createElement("option");
-      option.value = name;
-      datalist.appendChild(option);
-    });
-    input?.appendChild(datalist);
-  };
-
   return (
     <Box {...options}>
       <Formik
@@ -52,11 +34,13 @@ const CreateTechnologyForm: React.FC<CreateTechnologyFormProps> = ({
           );
           const result = await createTechnology({
             variables: {
-              name: values.name,
-              icon: values.iconName,
-              category: {
-                name: values.categoryName,
-                color: values.categoryColor,
+              input: {
+                name: values.name,
+                icon: values.iconName,
+                category: {
+                  name: values.categoryName,
+                  color: values.categoryColor,
+                },
               },
             },
             update: (cache) => {
