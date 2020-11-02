@@ -12,6 +12,7 @@ import React from "react";
 import CreateProjectForm from "./CreateProjectForm";
 import CreateTechnologyForm from "./CreateTechnologyForm";
 import UpdateTechnologyForm from "./UpdateTechnologyForm";
+import UpdateProjectForm from "./UpdateProjectForm";
 
 export interface ModalFormProps {
   variant: "project" | "technology";
@@ -19,6 +20,7 @@ export interface ModalFormProps {
   isOpen: boolean;
   setOpen(state: boolean): void;
   entityId?: number;
+  projectId?: number;
 }
 
 const ModalForm: React.FC<ModalFormProps> = ({
@@ -27,6 +29,7 @@ const ModalForm: React.FC<ModalFormProps> = ({
   variant,
   action,
   entityId,
+  projectId,
 }) => {
   return (
     <Fade timeout={300} in={isOpen}>
@@ -53,7 +56,14 @@ const ModalForm: React.FC<ModalFormProps> = ({
                   <ModalCloseButton onClick={() => setOpen(false)} />
                   <ModalBody pb={8}>
                     {variant === "project" ? (
-                      <CreateProjectForm setOpen={setOpen} />
+                      action === "create" ? (
+                        <CreateProjectForm setOpen={setOpen} />
+                      ) : (
+                        <UpdateProjectForm
+                          setOpen={setOpen}
+                          projectId={projectId || -1}
+                        />
+                      )
                     ) : action === "create" ? (
                       <CreateTechnologyForm setOpen={setOpen} />
                     ) : (

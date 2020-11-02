@@ -1,4 +1,4 @@
-import { Box, Flex, Text } from "@chakra-ui/core";
+import { Box, Flex } from "@chakra-ui/core";
 import React, { useState } from "react";
 import Layout from "../components/Layout";
 import ModalForm from "../components/ModalForm";
@@ -12,22 +12,25 @@ export interface ProjectsProps {}
 
 const Projects: React.FC<ProjectsProps> = ({}) => {
   const { data, loading } = useGetProjectsQuery();
-  const projectsData = data?.getProjects;
   const [isOpen, setOpen] = useState(false);
-  const [isUpdateProjectOpen, setUpdateProjectOpen] = useState(false);
+  const [projectId, setProjectId] = useState(-1);
+  const [isUpdateModalOpen, setUpdateModal] = useState(false);
 
   let body;
 
   if (loading) {
-    // Loading state
+    return <LoadingSpinner />;
   } else if (!loading && data) {
-    console.log(data);
     const Projects = (() => {
-      return projectsData?.map((p) => (
+      return data.getProjects?.map((p) => (
         <ProjectCard
           key={p.name}
           name={p.name}
           pictureSrc={p.pictures ? p.pictures?.find((p) => p.primary)?.url : ""}
+          onClick={() => {
+            setProjectId(p.id);
+            setUpdateModal(true);
+          }}
         />
       ));
     })();
@@ -53,10 +56,11 @@ const Projects: React.FC<ProjectsProps> = ({}) => {
         variant="project"
       />
       <ModalForm
-        isOpen={isUpdateProjectOpen}
-        setOpen={setUpdateProjectOpen}
-        action="create"
+        isOpen={isUpdateModalOpen}
+        setOpen={setUpdateModal}
+        action="update"
         variant="project"
+        projectId={projectId}
       />
     </Box>
   );

@@ -56,12 +56,14 @@ const UpdateTechnologyForm: React.FC<UpdateTechnologyFormProps> = ({
           onSubmit={async (values, { setErrors }) => {
             const result = await updateTechnology({
               variables: {
-                name: values.name ? values.name : "",
-                icon: values.iconName ? values.iconName : "",
-                category: {
-                  name: values.categoryName ? values.categoryName : "",
+                input: {
+                  name: values.name ? values.name : "",
+                  icon: values.iconName ? values.iconName : "",
+                  category: {
+                    name: values.categoryName ? values.categoryName : "",
+                  },
                 },
-                id: entityId, ///
+                id: entityId,
               },
               update: (cache) => {
                 cache.evict({ fieldName: "getTechnologies" });

@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, List, ListItem, Link } from "@chakra-ui/core";
+import { Box, Link } from "@chakra-ui/core";
 import NextLink from "next/link";
 
 export interface NavProps {}

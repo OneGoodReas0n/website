@@ -13,16 +13,16 @@ const Projects: React.FC<ProjectsProps> = ({}) => {
       name: "Piforum",
       description: "This is Reddit clone",
       technologies: [
-        { name: "Typescript", iconName: "typescript", category: "backend" },
-        { name: "Graphql", iconName: "graphql", category: "backend" },
-        { name: "Apollo", iconName: "apollo", category: "backend" },
-        { name: "Postgresql", iconName: "postgresql", category: "backend" },
-        { name: "HTML5", iconName: "html", category: "frontend" },
-        { name: "CSS3", iconName: "css", category: "frontend" },
+        { name: "Typescript", iconName: "typescript", categoryName: "backend" },
+        { name: "Graphql", iconName: "graphql", categoryName: "backend" },
+        { name: "Apollo", iconName: "apollo", categoryName: "backend" },
+        { name: "Postgresql", iconName: "postgresql", categoryName: "backend" },
+        { name: "HTML5", iconName: "html", categoryName: "frontend" },
+        { name: "CSS3", iconName: "css", categoryName: "frontend" },
         {
           name: "Typescript-React",
           iconName: "typescript",
-          category: "frontend",
+          categoryName: "frontend",
         },
       ],
       links: ["http://piforum.xyz", "http://piforum.xyz"],
@@ -33,16 +33,16 @@ const Projects: React.FC<ProjectsProps> = ({}) => {
       name: "Weather App",
       description: "This is Weather app",
       technologies: [
-        { name: "Typescript", iconName: "typescript", category: "backend" },
-        { name: "Graphql", iconName: "graphql", category: "backend" },
-        { name: "Apollo", iconName: "apollo", category: "backend" },
-        { name: "Postgresql", iconName: "postgresql", category: "backend" },
-        { name: "HTML5", iconName: "html", category: "frontend" },
-        { name: "CSS3", iconName: "css", category: "frontend" },
+        { name: "Typescript", iconName: "typescript", categoryName: "backend" },
+        { name: "Graphql", iconName: "graphql", categoryName: "backend" },
+        { name: "Apollo", iconName: "apollo", categoryName: "backend" },
+        { name: "Postgresql", iconName: "postgresql", categoryName: "backend" },
+        { name: "HTML5", iconName: "html", categoryName: "frontend" },
+        { name: "CSS3", iconName: "css", categoryName: "frontend" },
         {
           name: "Typescript-React",
           iconName: "typescript",
-          category: "frontend",
+          categoryName: "frontend",
         },
       ],
       links: ["http://piforum.xyz", "http://piforum.xyz"],
@@ -53,16 +53,16 @@ const Projects: React.FC<ProjectsProps> = ({}) => {
       name: "Virtual keyboard",
       description: "This is virtual keyboard app",
       technologies: [
-        { name: "Typescript", iconName: "typescript", category: "backend" },
-        { name: "Graphql", iconName: "graphql", category: "backend" },
-        { name: "Apollo", iconName: "apollo", category: "backend" },
-        { name: "Postgresql", iconName: "postgresql", category: "backend" },
-        { name: "HTML5", iconName: "html", category: "frontend" },
-        { name: "CSS3", iconName: "css", category: "frontend" },
+        { name: "Typescript", iconName: "typescript", categoryName: "backend" },
+        { name: "Graphql", iconName: "graphql", categoryName: "backend" },
+        { name: "Apollo", iconName: "apollo", categoryName: "backend" },
+        { name: "Postgresql", iconName: "postgresql", categoryName: "backend" },
+        { name: "HTML5", iconName: "html", categoryName: "frontend" },
+        { name: "CSS3", iconName: "css", categoryName: "frontend" },
         {
           name: "Typescript-React",
           iconName: "typescript",
-          category: "frontend",
+          categoryName: "frontend",
         },
       ],
       links: ["http://piforum.xyz", "http://piforum.xyz"],
@@ -89,7 +89,7 @@ const Projects: React.FC<ProjectsProps> = ({}) => {
   })();
 
   return (
-    <Box id="projects" pb={6}>
+    <Box id="projects">
       <Title title="Projects" />
       <Layout size="middle" mt={12}>
         {ProjectList}

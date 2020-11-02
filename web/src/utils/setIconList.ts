@@ -1,7 +1,7 @@
 import { IconColor } from "./iconsMap";
 
 export const setIconList = (name: string) => {
-  const iconNames = [];
+  const iconNames: string[] = [];
   const inputs = document.getElementsByName(name);
   for (let iconName in IconColor) {
     iconNames.push(iconName);

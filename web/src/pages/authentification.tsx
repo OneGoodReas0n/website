@@ -1,7 +1,7 @@
 import { Box, Button, Flex } from "@chakra-ui/core";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useState } from "react";
 import { InputField } from "../components/InputField";
 import Layout from "../components/Layout";
 import { validateLogin, errorMap } from "../utils/validation";
@@ -11,6 +11,8 @@ import {
   MeQuery,
   MeDocument,
   useMeQuery,
+  useGetUsersQuery,
+  useRegisterMutation,
 } from "../generate/graphql";
 import LoadingSpinner from "../components/LoadingSpinner";
 
@@ -27,12 +29,15 @@ export interface LoginError {
 const Login: React.FC = ({}) => {
   const router = useRouter();
   const [login] = useLoginMutation();
+  const [register] = useRegisterMutation();
   const { loading, data } = useMeQuery();
-  if (loading) {
+  const { loading: usersLoading, data: users } = useGetUsersQuery();
+  const [action, setAction] = useState<"login" | "register">();
+  if (loading || usersLoading) {
     return <LoadingSpinner />;
   } else if (!loading && data?.me) {
     router.push("/dashboard");
-    return <Box></Box>;
+    return null;
   } else
     return (
       <Layout size="small" mt={20}>
@@ -44,23 +49,43 @@ const Login: React.FC = ({}) => {
               setErrors(errorMap(errors));
               return;
             }
-            const response = await login({
-              variables: values,
-              update: (cache, { data }) => {
-                cache.writeQuery<MeQuery>({
-                  query: MeDocument,
-                  data: {
-                    __typename: "Query",
-                    me: data?.login.entity,
-                  },
-                });
-              },
-            });
-            if (response.data?.login.errors) {
-              setErrors(errorMap(response.data.login.errors));
-              return;
+            if (action === "login") {
+              const response = await login({
+                variables: values,
+                update: (cache, { data }) => {
+                  cache.writeQuery<MeQuery>({
+                    query: MeDocument,
+                    data: {
+                      __typename: "Query",
+                      me: data?.login.entity,
+                    },
+                  });
+                },
+              });
+              if (response.data?.login.errors) {
+                setErrors(errorMap(response.data.login.errors));
+                return;
+              }
+              router.push("/dashboard");
+            } else {
+              const response = await register({
+                variables: values,
+                update: (cache, { data }) => {
+                  cache.writeQuery<MeQuery>({
+                    query: MeDocument,
+                    data: {
+                      __typename: "Query",
+                      me: data?.register.entity,
+                    },
+                  });
+                },
+              });
+              if (response.data?.register.errors) {
+                setErrors(errorMap(response.data.register.errors));
+                return;
+              }
+              router.push("/dashboard");
             }
-            router.push("/dashboard");
           }}
         >
           {({ isSubmitting }) => (
@@ -80,13 +105,29 @@ const Login: React.FC = ({}) => {
                 <Button type="button" onClick={() => router.back()}>
                   Back
                 </Button>
-                <Button
-                  type="submit"
-                  colorScheme="teal"
-                  isLoading={isSubmitting}
-                >
-                  Log in
-                </Button>
+                {users?.getUsers?.length || [].length > 0 ? (
+                  <Button
+                    type="submit"
+                    colorScheme="teal"
+                    isLoading={isSubmitting}
+                    onClick={() => {
+                      setAction("login");
+                    }}
+                  >
+                    Log in
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    colorScheme="teal"
+                    isLoading={isSubmitting}
+                    onClick={() => {
+                      setAction("register");
+                    }}
+                  >
+                    Register
+                  </Button>
+                )}
               </Flex>
             </Form>
           )}

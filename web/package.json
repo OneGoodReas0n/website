@@ -21,7 +21,8 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-dropzone": "^11.2.0",
-    "sass": "^1.26.11"
+    "sass": "^1.26.11",
+    "vercel": "^20.1.2"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "1.17.10",

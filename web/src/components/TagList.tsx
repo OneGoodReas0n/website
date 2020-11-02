@@ -15,7 +15,7 @@ const TagList: React.FC<TagListProps> = ({ technologies }) => {
           name={tag.name}
           iconName={tag.iconName}
           key={tag.name}
-          category={tag.category}
+          categoryName={tag.categoryName}
         />
       ))}
     </Box>

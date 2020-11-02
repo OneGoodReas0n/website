@@ -6,7 +6,6 @@ import TechnologyItem, { TechnologyItemProps } from "./TechnologyItem";
 interface TechnologyCardProps extends TechnologyItemProps, BoxProps {}
 
 const TechnologyCard: React.FC<TechnologyCardProps> = ({
-  categoryColor,
   categoryName,
   iconName,
   name,
@@ -42,7 +41,6 @@ const TechnologyCard: React.FC<TechnologyCardProps> = ({
             name={name}
             iconName={iconName}
             categoryName={categoryName}
-            categoryColor={categoryColor}
           />
         </Box>
       )}

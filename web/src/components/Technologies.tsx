@@ -30,9 +30,9 @@ const Technologies: React.FC<TechnologiesProps> = ({}) => {
     );
   } else if (!data && !loading) {
     return (
-      <Box>
+      <Layout size="middle">
         <Text>Something went wrong </Text>
-      </Box>
+      </Layout>
     );
   } else {
     return (
