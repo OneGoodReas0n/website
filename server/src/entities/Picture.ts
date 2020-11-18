@@ -3,11 +3,10 @@ import { Field, Int, ObjectType } from "type-graphql";
 import {
   BaseEntity,
   Column,
-  CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from "typeorm";
 import Project from "./Project";
 
@@ -23,14 +22,6 @@ export default class Picture extends BaseEntity {
   @Column({ unique: true })
   url!: string;
 
-  @Field(() => String)
-  @CreateDateColumn()
-  createdAt = new Date();
-
-  @Field(() => String)
-  @UpdateDateColumn()
-  updatedAt = new Date();
-
   @Field({ defaultValue: 0, nullable: true })
   @Column({ default: 0, nullable: true })
   primary: number;
@@ -38,5 +29,6 @@ export default class Picture extends BaseEntity {
   @ManyToOne(() => Project, (project) => project.pictures, {
     onDelete: "CASCADE",
   })
+  @JoinColumn()
   project: Project;
 }

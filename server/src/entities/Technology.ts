@@ -3,16 +3,10 @@ import { Field, Int, ObjectType } from "type-graphql";
 import {
   BaseEntity,
   Column,
-  CreateDateColumn,
   Entity,
-  JoinColumn,
   ManyToMany,
-  ManyToOne,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from "typeorm";
-import Category from "./Category";
-import Icon from "./Icon";
 import Project from "./Project";
 
 @ObjectType()
@@ -22,28 +16,18 @@ export default class Technology extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Field(() => String)
-  @CreateDateColumn()
-  createdAt = new Date();
-
-  @Field(() => String)
-  @UpdateDateColumn()
-  updatedAt = new Date();
-
   @MinLength(3, { message: "Technology name should be longer than 2 symbols" })
   @Field(() => String)
   @Column({ unique: true })
   name!: string;
 
-  @ManyToOne(() => Category, (category) => category.technology, {
-    nullable: true,
-  })
-  @JoinColumn()
-  category: Category;
+  @Field(() => String)
+  @Column()
+  iconName: string;
 
-  @ManyToOne(() => Icon, (icon) => icon.technology, { nullable: true })
-  @JoinColumn()
-  icon: Icon;
+  @Field(() => Number)
+  @Column()
+  category: number;
 
   @ManyToMany(() => Project, (project) => project.technologies)
   projects: Project;

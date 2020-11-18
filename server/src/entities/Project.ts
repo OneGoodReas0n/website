@@ -5,7 +5,6 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
   JoinTable,
   ManyToMany,
   OneToMany,
@@ -13,9 +12,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
-import Icon from "./Icon";
 import Picture from "./Picture";
 import Technology from "./Technology";
+import ProjectLink from "./ProjectLink";
 
 @ObjectType()
 @Entity()
@@ -53,11 +52,10 @@ export default class Project extends BaseEntity {
   @OneToMany(() => Picture, (picture) => picture.project)
   pictures: Picture[];
 
-  @OneToOne(() => Icon, (icon) => icon.project)
-  @JoinColumn()
-  icon: Icon;
-
   @ManyToMany(() => Technology, (technology) => technology.projects)
   @JoinTable()
   technologies: Technology[];
+
+  @OneToOne(() => ProjectLink, (link) => link.project)
+  link: ProjectLink;
 }
