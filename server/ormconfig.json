@@ -33,7 +33,7 @@
     "password": "postgres",
     "database": "portfolio_test",
     "dropSchema": true,
-    "synchroize": true,
+    "synchroize": false,
     "migrationsRun": true,
     "port": 5432,
     "logging": false,

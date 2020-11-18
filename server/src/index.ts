@@ -1,34 +1,19 @@
 import connectRedis from "connect-redis";
 import cors from "cors";
 import "dotenv-safe/config";
+import "reflect-metadata";
 import express from "express";
 import session from "express-session";
 import Redis from "ioredis";
-import "reflect-metadata";
-import { __prod__, COOKIE_NAME } from "./consts";
+import { COOKIE_NAME, __prod__ } from "./consts";
 import { createApolloServer } from "./utils/createApolloServer";
-import { createConnection } from "typeorm";
-import path from "path";
-import User from "./entities/User";
-import Project from "./entities/Project";
-import Category from "./entities/Category";
-import Icon from "./entities/Icon";
-import Picture from "./entities/Picture";
-import Technology from "./entities/Technology";
+import { createORMConnection } from "./utils/createORMConnection";
 
 const PORT = process.env.PORT;
 
 (async () => {
   const app = express();
-
-  await createConnection({
-    type: "postgres",
-    url: __prod__ ? process.env.DATABASE_URL : process.env.DEV_DATABASE_URL,
-    logging: true,
-    synchronize: true,
-    migrations: [path.join(__dirname, "./migrations/*")],
-    entities: [User, Project, Category, Icon, Picture, Technology],
-  });
+  await createORMConnection();
 
   let RedisStore = connectRedis(session);
   let redisClient = new Redis(
