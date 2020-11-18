@@ -16,6 +16,7 @@ import { validateProject, errorsMap, Errors } from "../utils/validator";
 import Picture from "../entities/Picture";
 import Technology from "../entities/Technology";
 import { isAuth } from "../middleware/isAuth";
+import ProjectLink from "../entities/ProjectLink";
 
 const addOrReturnPictureAsync = async (obj: PictureObj): Promise<Picture> => {
   return new Promise(async (resolve) => {
@@ -56,6 +57,14 @@ class PictureObj {
 }
 
 @InputType()
+class LinkObj {
+  @Field(() => String)
+  demo: string;
+  @Field(() => String)
+  source_code: string;
+}
+
+@InputType()
 export class ProjectInput {
   @Field()
   name: string;
@@ -67,6 +76,8 @@ export class ProjectInput {
   pictures: PictureObj[];
   @Field(() => [String], { nullable: true })
   technologyNames: string[];
+  @Field(() => LinkObj)
+  link: LinkObj;
 }
 
 @ObjectType()
@@ -82,12 +93,21 @@ export default class TechnologyResolver {
     });
     return pictures;
   }
+
   @FieldResolver(() => [Technology], { nullable: true })
   async technologies(@Root() project: Project) {
     const currentProject = await Project.findOne(project.id, {
       relations: ["technologies"],
     });
     return currentProject?.technologies;
+  }
+
+  @FieldResolver(() => ProjectLink)
+  async link(@Root() project: Project) {
+    const link = await ProjectLink.findOne({
+      where: { project },
+    });
+    return link;
   }
 
   @Query(() => Project, { nullable: true })
@@ -110,15 +130,23 @@ export default class TechnologyResolver {
   async createProject(
     @Arg("input") input: ProjectInput
   ): Promise<ProjectResponse> {
-    const { name, description, status, pictures, technologyNames } = input;
+    const {
+      name,
+      description,
+      status,
+      pictures,
+      technologyNames,
+      link,
+    } = input;
     let newPictures: Picture[] = [];
-
     let technologies: Technology[] = [];
     const errors = validateProject(input);
+
     if (errors.length > 0) {
       return { errors };
     }
     const project = await Project.findOne({ where: { name: input.name } });
+
     if (project) {
       return { errors: [errorsMap().get(Errors.PROJECT_IS_CREATED)!] };
     }
@@ -134,13 +162,27 @@ export default class TechnologyResolver {
         technologyNames.includes(t.name)
       );
     }
+
     const newProject = await Project.create({
       name,
       description,
-      status: status === "In develop" ? 0 : status === "Completed" ? 1 : 2,
-      pictures: newPictures,
       technologies,
+      status: status === "In develop" ? 0 : status === "Completed" ? 1 : 2,
     }).save();
+
+    const promises = newPictures.map(async (pic) => {
+      pic.project = newProject;
+      await pic.save();
+    });
+
+    await Promise.all(promises);
+
+    await ProjectLink.create({
+      demo: link.demo,
+      source_code: link.source_code,
+      project: newProject,
+    }).save();
+
     return { entity: newProject };
   }
 
@@ -150,7 +192,14 @@ export default class TechnologyResolver {
     @Arg("input") input: ProjectInput,
     @Arg("id") id: number
   ): Promise<ProjectResponse> {
-    const { name, description, status, pictures, technologyNames } = input;
+    const {
+      name,
+      description,
+      status,
+      pictures,
+      technologyNames,
+      link,
+    } = input;
     let pictureArr: Picture[] = [];
     let technologies: Technology[] = [];
     const errors = validateProject(input);
@@ -187,8 +236,8 @@ export default class TechnologyResolver {
         const picturesToAdd = pictures.filter((p) =>
           newPicturesUrls.includes(p.url)
         );
-        const actions = await picturesToAdd.map((p) =>
-          addOrReturnPictureAsync(p)
+        const actions = picturesToAdd.map(
+          async (p) => await addOrReturnPictureAsync(p)
         );
         const newPictures = await Promise.all(actions);
         const allPictures = existedPictures.concat(newPictures);
@@ -221,6 +270,21 @@ export default class TechnologyResolver {
         technologyNames.includes(t.name)
       );
     }
+
+    if (!link.source_code || !link.demo) {
+      return {
+        errors: [errorsMap().get(Errors.PROJECT_LINKS_ARE_UNDEFINDED)!],
+      };
+    }
+
+    const currentLink = await ProjectLink.findOne({
+      where: { project: project?.id },
+    });
+    if (currentLink) {
+      currentLink.demo = link.demo;
+      currentLink.source_code = link.source_code;
+    }
+
     const numStatus =
       status === "In develop" ? 0 : status === "Completed" ? 1 : 2;
 
@@ -229,6 +293,7 @@ export default class TechnologyResolver {
     project!.name = name;
     project!.description = description;
     project!.status = numStatus;
+    project!.link = currentLink!;
     await project?.save();
 
     return { entity: project };
