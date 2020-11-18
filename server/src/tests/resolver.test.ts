@@ -5,27 +5,25 @@ import {
 } from "apollo-server-testing";
 import { GraphQLResponse } from "apollo-server-types";
 import { DocumentNode } from "graphql";
+import { createORMConnection } from "../utils/createORMConnection";
 import { getConnection } from "typeorm";
+import Picture from "../entities/Picture";
+import Project from "../entities/Project";
+import Technology from "../entities/Technology";
 import User from "../entities/User";
+import { ProjectInput } from "../resolvers/project";
+import { TechInput } from "../resolvers/technology";
 import { UserInput } from "../resolvers/user";
 import { createApolloServer } from "../utils/createApolloServer";
 import { createApolloTestServerWithSession } from "../utils/createApolloTestServerWithSession";
-import { createORMConnection } from "../utils/createORMConnection";
 import { Errors, errorsMap } from "../utils/validator";
-import Technology from "../entities/Technology";
-import { ProjectInput } from "../resolvers/project";
-import { TechInput } from "../resolvers/technology";
-import Project from "../entities/Project";
-import Picture from "../entities/Picture";
-import Icon from "../entities/Icon";
-import Category from "../entities/Category";
 
 type StringOrAst = string | DocumentNode;
 
 let apolloServer: ApolloServer;
 let testClient: ApolloServerTestClient;
 
-export const registerMutation = `
+const registerMutation = `
    mutation RegisterMutation ($email: String!, $password: String!){
       register(input:{email:$email, password: $password}){
          errors{
@@ -39,7 +37,7 @@ export const registerMutation = `
       }
    }`;
 
-export const loginMutation = `
+const loginMutation = `
    mutation LoginMutation($email: String!, $password: String!){
       login(input:{email:$email, password: $password}){
          errors{
@@ -53,7 +51,7 @@ export const loginMutation = `
       }
    }`;
 
-export const meQuery = `
+const meQuery = `
    query meQuery {
       me {
          email
@@ -64,20 +62,15 @@ const getOneTechMutation = `
   query GetTechnology($id:Float!){
     getTechnology(id:$id){
       name
-      icon{
-        name
-      }
-      category{
-        name
-        color
-      }
+      iconName
+      category
     }
   }
    `;
 
 const createTechMutation = `
-   mutation CreateTechnology($name: String!, $icon: String!, $category: CategoryInput!){
-      createTechnology(input:{name:$name, icon:$icon, category:$category}){
+   mutation CreateTechnology($name: String!, $iconName: String!, $category: Float!){
+      createTechnology(input:{name:$name, iconName:$iconName, category:$category}){
          errors{
             name
             field
@@ -85,20 +78,15 @@ const createTechMutation = `
           }
           entity{
             name
-            icon{
-              name
-            }
-            category{
-              name
-              color
-            }
+            iconName
+            category
           }
       }
    }`;
 
 const updateTechMutation = `
-  mutation UpdateTechnology($id: Float!, $name: String!, $icon: String!, $category: CategoryInput! ){
-    updateTechnology(input:{name:$name, icon: $icon, category: $category}, id:$id){
+  mutation UpdateTechnology($id: Float!, $name: String!, $iconName: String!, $category: Float! ){
+    updateTechnology(input:{name:$name, iconName: $iconName, category: $category}, id:$id){
       errors{
         name
         field
@@ -106,13 +94,8 @@ const updateTechMutation = `
       }
       entity{
         name
-        icon{
-          name
-        }
-        category{
-          name
-          color
-        }
+        iconName
+        category
       }
     }
   }`;
@@ -123,9 +106,9 @@ const deleteTechMutation = `
   }`;
 
 const getProjectsQuery = `
-  query getProjects{
+  query GetProjects{
     getProjects{
-        name
+      name
       description
       status
       pictures{
@@ -134,9 +117,11 @@ const getProjectsQuery = `
       }
       technologies{
         name
-        icon{
-          name
-        }
+        iconName
+      }
+      link{
+        demo
+        source_code
       }
     }
   }
@@ -154,13 +139,17 @@ const getProjectQuery = `
       technologies{
         name
       }
+      link{
+        demo
+        source_code
+      }
     }
   }
 `;
 
 const createProjectMutation = `
-  mutation CreateProjectMutation($name: String!, $description: String, $status: String!, $pictures: [PictureObj!], $technologyNames: [String!]){
-    createProject(input:{name:$name, description:$description, status: $status, pictures:$pictures, technologyNames:$technologyNames}){
+  mutation CreateProjectMutation($name: String!, $description: String, $status: String!, $pictures: [PictureObj!], $technologyNames: [String!], $link: LinkObj!){
+    createProject(input:{name:$name, description:$description, status: $status, pictures:$pictures, technologyNames:$technologyNames, link:$link}){
       errors{
         name
         field
@@ -176,13 +165,12 @@ const createProjectMutation = `
         }
         technologies{
           name
-          icon{
-            name
-          }
-          category{
-            name
-            color
-          }
+          iconName
+          category
+        }
+        link{
+          demo
+          source_code
         }
       }
     }
@@ -190,8 +178,8 @@ const createProjectMutation = `
 `;
 
 const updateProjectMutation = `
-  mutation UpdateProjectMutation($id: Float!, $name: String!, $description: String, $status: String!, $pictures: [PictureObj!], $technologyNames: [String!]){
-    updateProject(id:$id,input:{name:$name, description:$description, status: $status, pictures:$pictures, technologyNames:$technologyNames}){
+  mutation UpdateProjectMutation($id: Float!, $name: String!, $description: String, $status: String!, $pictures: [PictureObj!], $technologyNames: [String!], $link: LinkObj!){
+    updateProject(id:$id,input:{name:$name, description:$description, status: $status, pictures:$pictures, technologyNames:$technologyNames, link:$link}){
       errors{
         name
         field
@@ -207,6 +195,10 @@ const updateProjectMutation = `
         technologies{
           name
         }
+        link{
+          demo
+          source_code
+        }
       }
     }
   }
@@ -218,7 +210,7 @@ const deleteProjectMutation = `
   }
 `;
 
-export const mutate = async (
+const mutate = async (
   input: UserInput,
   mutation: StringOrAst,
   client: ApolloServerTestClient = testClient
@@ -229,7 +221,7 @@ export const mutate = async (
   });
 };
 
-export const query = async (
+const query = async (
   query: StringOrAst,
   client: ApolloServerTestClient = testClient
 ): Promise<GraphQLResponse> => {
@@ -249,7 +241,7 @@ const mutateCreateTech = async (
 };
 
 const mutateGetOneTech = async (
-  id: number,
+  id: Number,
   client: ApolloServerTestClient = testClient
 ): Promise<GraphQLResponse> => {
   return client.mutate({
@@ -260,7 +252,7 @@ const mutateGetOneTech = async (
 
 const mutateUpdateTech = async (
   input: TechInput,
-  id: number,
+  id: Number,
   client: ApolloServerTestClient = testClient
 ): Promise<GraphQLResponse> => {
   return client.mutate({
@@ -270,7 +262,7 @@ const mutateUpdateTech = async (
 };
 
 const mutateDeleteTech = async (
-  id: number,
+  id: Number,
   client: ApolloServerTestClient = testClient
 ): Promise<GraphQLResponse> => {
   return client.mutate({
@@ -284,7 +276,7 @@ const clearSession = async () => {
   testClient = createTestClient(apolloServer);
 };
 
-export const checkIfUserAuthorized = async () => {
+const checkIfUserAuthorized = async () => {
   const testUser: UserInput = {
     email: "ben@ben.com",
     password: "123Benben",
@@ -308,7 +300,7 @@ const queryGetProjects = async (
 };
 
 const queryGetProject = async (
-  id: number,
+  id: Number,
   client: ApolloServerTestClient = testClient
 ): Promise<GraphQLResponse> => {
   return client.query({
@@ -328,7 +320,7 @@ const mutateCreateProject = async (
 };
 
 const mutateUpdateProject = async (
-  id: number,
+  id: Number,
   input: ProjectInput,
   client: ApolloServerTestClient = testClient
 ): Promise<GraphQLResponse> => {
@@ -339,7 +331,7 @@ const mutateUpdateProject = async (
 };
 
 const mutateDeleteProject = async (
-  id: number,
+  id: Number,
   client: ApolloServerTestClient = testClient
 ): Promise<GraphQLResponse> => {
   return client.mutate({
@@ -361,60 +353,23 @@ const clearPictures = async () => {
   await Promise.all(promises);
 };
 
-const clearIcons = async () => {
-  const icons = await Icon.find();
-  const promises = icons.map((i) => {
-    return new Promise(async (resolve) => {
-      i.technology = new Technology();
-      await i.save();
-      await Icon.remove(i);
-      resolve(true);
-    });
-  });
-  await Promise.all(promises);
-};
-
-const clearCategories = async () => {
-  const categories = await Category.find();
-  const promises = categories.map((c) => {
-    return new Promise(async (resolve) => {
-      await Category.remove(c);
-      resolve(true);
-    });
-  });
-  await Promise.all(promises);
-};
-
 const clearTechnologies = async () => {
   const technologies = await Technology.find();
-  const promises = technologies.map(async (t) => {
-    return new Promise(async (resolve) => {
-      t.category = new Category();
-      await t.save();
-      await Technology.remove(t);
-      resolve(true);
-    });
-  });
-  await Promise.all(promises);
+  if (technologies.length > 0) {
+    await Technology.delete([...technologies.map((tech) => tech.id)]);
+  }
 };
 
 const clearProjects = async () => {
   const projects = await Project.find();
-  const promises = projects.map((p) => {
-    return new Promise(async (resolve) => {
-      await Project.remove(p);
-      resolve(p);
-    });
-  });
-  await Promise.all(promises);
+  if (projects.length > 0) {
+    await Project.delete([...projects.map((p) => p.id)]);
+  }
 };
 
 const createOneTechnology = async (input: TechInput): Promise<Technology> => {
   const result = await mutateCreateTech(input);
-  expect(result.data?.createTechnology.entity).toEqual({
-    ...input,
-    icon: { name: input.icon },
-  });
+  expect(result.data?.createTechnology.entity).toEqual(input);
   const tech = await Technology.findOne({
     where: { name: input.name },
   });
@@ -430,11 +385,6 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await User.clear();
-  await clearTechnologies();
-  await clearProjects();
-  await clearIcons();
-  await clearPictures();
-  await clearCategories();
 });
 
 afterAll(async () => {
@@ -618,8 +568,8 @@ describe("TechResolver testing", () => {
       await checkIfUserAuthorized();
       const testTech: TechInput = {
         name: "",
-        icon: "picture",
-        category: { name: "Backend", color: "#FFFFFF" },
+        iconName: "picture",
+        category: 1,
       };
       const result = await mutateCreateTech(testTech);
       expect(result.data?.createTechnology.errors).toEqual([
@@ -632,8 +582,8 @@ describe("TechResolver testing", () => {
       await checkIfUserAuthorized();
       const testTech: TechInput = {
         name: "React",
-        icon: "",
-        category: { name: "Backend", color: "#FFFFFF" },
+        iconName: "",
+        category: 1,
       };
       const result = await mutateCreateTech(testTech);
       expect(result.data?.createTechnology.errors).toEqual([
@@ -644,24 +594,22 @@ describe("TechResolver testing", () => {
 
     it("Success: technology is created", async () => {
       await checkIfUserAuthorized();
-      const testTech = {
+      const testTech: TechInput = {
         name: "React",
-        icon: "picture",
-        category: { name: "Backend", color: "#FFFFFF" },
+        iconName: "picture",
+        category: 1,
       };
       const result = await mutateCreateTech(testTech);
-      expect(result.data?.createTechnology.entity).toEqual({
-        ...testTech,
-        icon: { name: testTech.icon },
-      });
-
+      expect(result.data?.createTechnology.entity).toEqual(testTech);
       const tech = await Technology.findOne({
         where: { name: testTech.name },
       });
       expect(tech).toBeDefined();
+      await clearTechnologies();
       await clearSession();
     });
   });
+
   describe("mutation getOne() ", () => {
     it("Error: no such technology", async () => {
       await checkIfUserAuthorized();
@@ -674,27 +622,21 @@ describe("TechResolver testing", () => {
       await checkIfUserAuthorized();
       const testTech: TechInput = {
         name: "React",
-        icon: "picture",
-        category: { name: "Backend", color: "#FFF" },
+        iconName: "picture",
+        category: 1,
       };
       const createResult = await mutateCreateTech(testTech);
-      expect(createResult.data?.createTechnology.entity).toEqual({
-        ...testTech,
-        icon: { name: testTech.icon },
-      });
+      expect(createResult.data?.createTechnology.entity).toEqual(testTech);
       const tech = await Technology.findOne({
         where: { name: testTech.name },
-        relations: ["icon", "category"],
       });
       expect(tech).toBeDefined();
       const getResult = await testClient.mutate({
         mutation: getOneTechMutation,
         variables: { id: tech?.id },
       });
-      expect(getResult.data?.getTechnology).toEqual({
-        ...testTech,
-        icon: { name: testTech.icon },
-      });
+      expect(getResult.data?.getTechnology).toEqual(testTech);
+      await clearTechnologies();
       await clearSession();
     });
   });
@@ -704,14 +646,11 @@ describe("TechResolver testing", () => {
       await checkIfUserAuthorized();
       const testEntity: TechInput = {
         name: "React",
-        icon: "picture",
-        category: { name: "Backend", color: "" },
+        iconName: "picture",
+        category: 1,
       };
       const createResult = await mutateCreateTech(testEntity);
-      expect(createResult.data?.createTechnology.entity).toEqual({
-        ...testEntity,
-        icon: { name: testEntity.icon },
-      });
+      expect(createResult.data?.createTechnology.entity).toEqual(testEntity);
       const tech = await Technology.findOne({
         where: { name: testEntity.name },
       });
@@ -720,14 +659,15 @@ describe("TechResolver testing", () => {
       const updateResult = await mutateUpdateTech(
         {
           name: "",
-          icon: "picture",
-          category: { name: "Backend" },
+          iconName: "picture",
+          category: 1,
         },
         tech?.id!
       );
       expect(updateResult.data?.updateTechnology.errors).toEqual([
         errorsMap().get(Errors.TECH_NAME_EMPTY),
       ]);
+      await clearTechnologies();
       await clearSession();
     });
 
@@ -735,20 +675,18 @@ describe("TechResolver testing", () => {
       await checkIfUserAuthorized();
       const testEntity: TechInput = {
         name: "React",
-        icon: "picture",
-        category: { name: "Backend", color: "" },
+        iconName: "picture",
+        category: 1,
       };
       const newEntity: TechInput = {
         name: "Graphql",
-        icon: "picture",
-        category: { name: "Backend", color: "#112233" },
+        iconName: "picture",
+        category: 1,
       };
       const tech = await createOneTechnology(testEntity);
       const updateResult = await mutateUpdateTech(newEntity, tech?.id!);
-      expect(updateResult.data?.updateTechnology.entity).toEqual({
-        ...newEntity,
-        icon: { name: newEntity.icon },
-      });
+      expect(updateResult.data?.updateTechnology.entity).toEqual(newEntity);
+      await clearTechnologies();
       await clearSession();
     });
   });
@@ -760,17 +698,18 @@ describe("TechResolver testing", () => {
       expect(deleteResult.data?.deleteTechnology).toEqual(false);
       await clearSession();
     });
+
     it("Success: technology has been deleted", async () => {
       await checkIfUserAuthorized();
       const tech: TechInput = {
         name: "React",
-        icon: "picture",
-        category: { name: "Backend", color: "" },
+        iconName: "picture",
+        category: 1,
       };
       const technology = await createOneTechnology(tech);
       await Technology.update(
         { id: technology?.id },
-        { icon: Icon.create(), category: Category.create() }
+        { iconName: "icon", category: 1 }
       );
       const deleteResult = await mutateDeleteTech(technology?.id!);
       expect(deleteResult.data?.deleteTechnology).toEqual(true);
@@ -784,10 +723,10 @@ describe("ProjectResolver testing", () => {
     it("Warning: no exist projects", async () => {
       await checkIfUserAuthorized();
       const result = await queryGetProjects();
+
       expect(result.data?.getProjects).toEqual([]);
       await clearSession();
     });
-
     it("Success: current projects have been returned", async () => {
       await checkIfUserAuthorized();
       const testProject: ProjectInput = {
@@ -796,6 +735,7 @@ describe("ProjectResolver testing", () => {
         status: "In develop",
         pictures: [],
         technologyNames: [],
+        link: { demo: "http://localhost", source_code: "http://localhost" },
       };
       const returnProject = {
         name: testProject.name,
@@ -803,11 +743,14 @@ describe("ProjectResolver testing", () => {
         status: 0,
         pictures: [],
         technologies: [],
+        link: { demo: "http://localhost", source_code: "http://localhost" },
       };
       const createResult = await mutateCreateProject(testProject);
       expect(createResult.data?.createProject.entity).toEqual(returnProject);
       const result = await queryGetProjects();
       expect(result.data?.getProjects).toEqual([returnProject]);
+      await clearProjects();
+      await clearTechnologies();
       await clearSession();
     });
   });
@@ -828,6 +771,7 @@ describe("ProjectResolver testing", () => {
         status: "In develop",
         pictures: [],
         technologyNames: [],
+        link: { demo: "http://localhost", source_code: "http://localhost" },
       };
       const returnProject = {
         name: "Test",
@@ -835,6 +779,7 @@ describe("ProjectResolver testing", () => {
         status: 0,
         pictures: [],
         technologies: [],
+        link: { demo: "http://localhost", source_code: "http://localhost" },
       };
       const createResult = await mutateCreateProject(testProject);
       expect(createResult.data?.createProject.entity).toEqual(returnProject);
@@ -844,6 +789,8 @@ describe("ProjectResolver testing", () => {
       expect(project).toBeDefined();
       const result = await queryGetProject(project!.id);
       expect(result.data?.getProject).toEqual(returnProject);
+      await clearProjects();
+      await clearTechnologies();
       await clearSession();
     });
   });
@@ -857,6 +804,7 @@ describe("ProjectResolver testing", () => {
         status: "In develop",
         pictures: [],
         technologyNames: [],
+        link: { demo: "http://localhost", source_code: "http://localhost" },
       };
       const createProjectResult = await mutateCreateProject(testProject);
       expect(createProjectResult.data?.createProject.errors).toEqual([
@@ -868,8 +816,8 @@ describe("ProjectResolver testing", () => {
       await checkIfUserAuthorized();
       const testTech: TechInput = {
         name: "React",
-        icon: "picture",
-        category: { name: "Backend", color: "" },
+        iconName: "picture",
+        category: 1,
       };
       const tech = await createOneTechnology(testTech);
       const testProject: ProjectInput = {
@@ -878,6 +826,7 @@ describe("ProjectResolver testing", () => {
         status: "In develop",
         pictures: [{ url: "https://picture.com/5", primary: 1 }],
         technologyNames: [tech.name],
+        link: { demo: "http://localhost", source_code: "http://localhost" },
       };
       const returnProject = {
         name: "Test",
@@ -887,15 +836,18 @@ describe("ProjectResolver testing", () => {
         technologies: [
           {
             name: tech.name,
-            icon: { name: testTech.icon },
+            iconName: testTech.iconName,
             category: testTech.category,
           },
         ],
+        link: { demo: "http://localhost", source_code: "http://localhost" },
       };
       const createProjectResult = await mutateCreateProject(testProject);
       expect(createProjectResult.data?.createProject.entity).toEqual(
         returnProject
       );
+      await clearProjects();
+      await clearTechnologies();
       await clearSession();
     });
   });
@@ -909,6 +861,7 @@ describe("ProjectResolver testing", () => {
         status: "In develop",
         pictures: [],
         technologyNames: [],
+        link: { demo: "http://localhost", source_code: "http://localhost" },
       };
       const returnProject = {
         name: "Test",
@@ -916,6 +869,7 @@ describe("ProjectResolver testing", () => {
         status: 0,
         pictures: [],
         technologies: [],
+        link: { demo: "http://localhost", source_code: "http://localhost" },
       };
       const createProjectResult = await mutateCreateProject(testProject);
       expect(createProjectResult.data?.createProject.entity).toEqual(
@@ -932,6 +886,8 @@ describe("ProjectResolver testing", () => {
       expect(updateProjectResult.data?.updateProject.errors).toEqual([
         errorsMap().get(Errors.PROJECT_NAME_IS_EMPTY),
       ]);
+      await clearProjects();
+      await clearTechnologies();
       await clearSession();
     });
 
@@ -943,6 +899,7 @@ describe("ProjectResolver testing", () => {
         status: "In develop",
         pictures: [],
         technologyNames: [],
+        link: { demo: "http://localhost", source_code: "http://localhost" },
       };
       const returnProject = {
         name: "Test",
@@ -950,6 +907,7 @@ describe("ProjectResolver testing", () => {
         status: 0,
         pictures: [],
         technologies: [],
+        link: { demo: "http://localhost", source_code: "http://localhost" },
       };
       const createProjectResult = await mutateCreateProject(testProject);
       expect(createProjectResult.data?.createProject.entity).toEqual(
@@ -974,6 +932,8 @@ describe("ProjectResolver testing", () => {
           { url: "http://picture.com/2" },
         ],
       });
+      await clearProjects();
+      await clearTechnologies();
       await clearSession();
     });
 
@@ -985,6 +945,7 @@ describe("ProjectResolver testing", () => {
         status: "In develop",
         pictures: [],
         technologyNames: [],
+        link: { demo: "http://localhost", source_code: "http://localhost" },
       };
       const returnProject = {
         name: "Test",
@@ -992,16 +953,17 @@ describe("ProjectResolver testing", () => {
         status: 0,
         pictures: [],
         technologies: [],
+        link: { demo: "http://localhost", source_code: "http://localhost" },
       };
       const technology1 = await createOneTechnology({
         name: "React",
-        icon: "picture",
-        category: { name: "Backend", color: "" },
+        iconName: "picture",
+        category: 1,
       });
       const technology2 = await createOneTechnology({
         name: "Graphql",
-        icon: "another",
-        category: { name: "Backend", color: "" },
+        iconName: "another",
+        category: 1,
       });
       const createProjectResult = await mutateCreateProject(testProject);
       expect(createProjectResult.data?.createProject.entity).toEqual(
@@ -1020,6 +982,8 @@ describe("ProjectResolver testing", () => {
         ...returnProject,
         technologies: [{ name: technology1.name }, { name: technology2.name }],
       });
+      await clearProjects();
+      await clearTechnologies();
       await clearSession();
     });
   });
@@ -1040,6 +1004,7 @@ describe("ProjectResolver testing", () => {
         status: "In develop",
         pictures: [],
         technologyNames: [],
+        link: { demo: "http://localhost", source_code: "http://localhost" },
       };
       const returnProject = {
         name: "Test",
@@ -1047,6 +1012,7 @@ describe("ProjectResolver testing", () => {
         status: 0,
         pictures: [],
         technologies: [],
+        link: { demo: "http://localhost", source_code: "http://localhost" },
       };
       const createProjectResult = await mutateCreateProject(testProject);
       expect(createProjectResult.data?.createProject.entity).toEqual(
@@ -1058,6 +1024,8 @@ describe("ProjectResolver testing", () => {
       expect(project).toBeDefined();
       const result = await mutateDeleteProject(project!.id);
       expect(result.data?.deleteProject).toEqual(true);
+      await clearProjects();
+      await clearTechnologies();
       await clearSession();
     });
   });
