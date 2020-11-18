@@ -13,6 +13,7 @@ export enum Errors {
   TECH_NAME_EMPTY = "TECH_NAME_EMPTY",
   TECH_ICON_NAME_EMPTY = "TECH_ICON_NAME_EMPTY",
   TECH_PICTURE_PATH_INVALID = "TECH_PICTURE_PATH_INVALID",
+  TECH_CATEGORY_IS_UNDEFINED = "TECH_CATEGORY_IS_UNDEFINED",
   TECH_IS_CREATED = "TECH_IS_CREATED",
   TECH_IS_NOT_FOUND = "TECH_IS_NOT_FOUND",
   TECH_CATEGORY_IS_EMPTY = "TECH_CATEGORY_IS_EMPTY",
@@ -22,6 +23,7 @@ export enum Errors {
   PROJECT_PICTURE_PATH_INVALID = "PROJECT_PICTURE_PATH_INVALID",
   PROJECT_IS_CREATED = "PROJECT_IS_CREATED",
   PROJECT_STATUS_IS_UNDEFINED = "PROJECT_STATUS_IS_UNDEFINED",
+  PROJECT_LINKS_ARE_UNDEFINDED = "PROJECT_LINKS_ARE_UNDEFINDED",
 }
 
 export const errorsMap = (): Map<string, FieldError> => {
@@ -118,6 +120,11 @@ export const errorsMap = (): Map<string, FieldError> => {
       field: "category",
       message: "Category name cannot be empty",
     },
+    {
+      name: Errors.PROJECT_LINKS_ARE_UNDEFINDED,
+      field: "link",
+      message: "Project links cannot be empty",
+    },
   ];
   errors.forEach((e) => {
     map.set(e.name, e);
@@ -161,14 +168,13 @@ export const validateTechnology = (input: TechInput): FieldError[] => {
     errors.push(error);
   }
 
-  if (!input.icon) {
+  if (!input.iconName) {
     const error = errorsMap().get(Errors.TECH_ICON_NAME_EMPTY)!;
     errors.push(error);
   }
 
-  if (input.category.name.length === 0) {
-    const error = errorsMap().get(Errors.TECH_PICTURE_PATH_INVALID)!;
-    errors.push(error);
+  if (input.category === undefined) {
+    errors.push(errorsMap().get(Errors.TECH_CATEGORY_IS_UNDEFINED)!);
   }
 
   return errors;
@@ -178,6 +184,10 @@ export const validateProject = (input: ProjectInput): FieldError[] => {
   const errors: FieldError[] = [];
   if (!input.name) {
     errors.push(errorsMap().get(Errors.PROJECT_NAME_IS_EMPTY)!);
+  }
+
+  if (!input.link.source_code || !input.link.demo) {
+    errors.push(errorsMap().get(Errors.PROJECT_LINKS_ARE_UNDEFINDED)!);
   }
 
   if (!input.status) {
