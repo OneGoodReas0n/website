@@ -1,5 +1,5 @@
-import { Box, Flex, Skeleton, Stack, Text } from "@chakra-ui/core";
 import React from "react";
+import { Box, Flex, Skeleton, Stack, Text } from "@chakra-ui/core";
 import { useGetTechnologiesQuery } from "../generate/graphql";
 import { categoriesName, mapCategoryNumByName } from "../utils/mapping";
 import Layout from "./Layout";
