@@ -5,9 +5,7 @@ import {
 } from "apollo-server-testing";
 import { GraphQLResponse } from "apollo-server-types";
 import { DocumentNode } from "graphql";
-import { createORMConnection } from "../utils/createORMConnection";
 import { getConnection } from "typeorm";
-import Picture from "../entities/Picture";
 import Project from "../entities/Project";
 import Technology from "../entities/Technology";
 import User from "../entities/User";
@@ -16,6 +14,7 @@ import { TechInput } from "../resolvers/technology";
 import { UserInput } from "../resolvers/user";
 import { createApolloServer } from "../utils/createApolloServer";
 import { createApolloTestServerWithSession } from "../utils/createApolloTestServerWithSession";
+import { createORMConnection } from "../utils/createORMConnection";
 import { Errors, errorsMap } from "../utils/validator";
 
 type StringOrAst = string | DocumentNode;
@@ -338,19 +337,6 @@ const mutateDeleteProject = async (
     mutation: deleteProjectMutation,
     variables: { id },
   });
-};
-
-const clearPictures = async () => {
-  const pictures = await Picture.find();
-  const promises = pictures.map((p) => {
-    return new Promise(async (resolve) => {
-      p.project = new Project();
-      await p.save();
-      await Picture.remove(p);
-      resolve(true);
-    });
-  });
-  await Promise.all(promises);
 };
 
 const clearTechnologies = async () => {
