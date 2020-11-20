@@ -1,5 +1,5 @@
 import { PictureObj } from "../generate/graphql";
-import { ExtendedFile } from "../components/UpdateProjectForm";
+import { ExtendedFile } from "../components/PictureInput";
 
 export const makePictureObjects = async (
   images: ExtendedFile[]

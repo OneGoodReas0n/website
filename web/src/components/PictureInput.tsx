@@ -145,7 +145,9 @@ const PictureInput: React.FC<PictureInputProps> = ({
           left="50%"
           transform="translate(-50%,-50%);"
           onClick={() => {
-            inputRef.current.click();
+            if (inputRef.current) {
+              inputRef.current.click();
+            }
           }}
         >
           <PlusSquareIcon color="#bbb" fontSize={32} />

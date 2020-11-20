@@ -1,12 +1,11 @@
-import { Box, Skeleton, Stack, Text, Flex } from "@chakra-ui/core";
+import { Box, Flex, Skeleton, Stack, Text } from "@chakra-ui/core";
 import React from "react";
 import { useGetTechnologiesQuery } from "../generate/graphql";
+import { categoriesName, mapCategoryNumByName } from "../utils/mapping";
 import Layout from "./Layout";
 import Slider from "./Slider";
-import TechnologyItem from "./TechnologyItem";
-import Title from "./Title";
-import { categoriesName, mapCategoryNumByName } from "../utils/mapping";
 import TechnologyTag from "./TechnologyTag";
+import Title from "./Title";
 
 export interface TechnologiesProps {}
 

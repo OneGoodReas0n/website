@@ -38,7 +38,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({
   const Pictures = (() => {
     return pictures.map((pic) => {
       return (
-        <Box className="picture" as="button" onClick={}>
+        <Box className="picture" as="button">
           <Image src={pic.url} mx="auto" />
         </Box>
       );

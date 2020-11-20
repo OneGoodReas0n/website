@@ -95,8 +95,8 @@ const UpdateTechnologyForm: React.FC<UpdateTechnologyFormProps> = ({
           )}
         </Formik>
         <Alert
-          isOpen={isAlertOpen}
-          setOpen={setAlertOpen}
+          isAlertOpen={isAlertOpen}
+          setAlertOpen={setAlertOpen}
           entityId={entityId}
           setUpdateModal={setOpen}
           entityName="technology"

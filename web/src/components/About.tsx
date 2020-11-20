@@ -1,5 +1,5 @@
+import { Box, Flex, Heading } from "@chakra-ui/core";
 import React from "react";
-import { Box, Heading, Text, Flex } from "@chakra-ui/core";
 import Layout from "./Layout";
 import TextSnippet from "./TextSnippet";
 

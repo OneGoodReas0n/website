@@ -4,10 +4,9 @@ import {
   FormLabel,
   Input,
   Textarea,
-  Box,
 } from "@chakra-ui/core";
 import { useField } from "formik";
-import React, { InputHTMLAttributes, useState } from "react";
+import React, { InputHTMLAttributes } from "react";
 
 type InputFieldProps = InputHTMLAttributes<HTMLInputElement> &
   InputHTMLAttributes<HTMLTextAreaElement> & {
@@ -51,7 +50,7 @@ export const InputField: React.FC<InputFieldProps> = ({
           <Input {...field} id={field.name} {...props} list={listName} />
 
           <datalist id={listName}>
-            {items.sort().map((item) => {
+            {items?.sort().map((item) => {
               return (
                 <option value={item} key={item}>
                   {item}

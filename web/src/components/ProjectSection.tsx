@@ -1,13 +1,13 @@
 import React from "react";
 import { Heading, Link, Box, Text } from "@chakra-ui/core";
 import TagList from "./TagList";
-import { RegularTechnologyFragment, ProjectLink } from "../generate/graphql";
+import { RegularTechnologyFragment, LinkObj } from "../generate/graphql";
 
 interface ProjectSectionProps {
   name: string;
   technologies: RegularTechnologyFragment[];
   description: string;
-  link: ProjectLink;
+  link: LinkObj;
 }
 
 const ProjectSection: React.FC<ProjectSectionProps> = ({

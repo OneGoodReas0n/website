@@ -1,5 +1,5 @@
+import { Box, Button, Flex, Heading, Image, Text } from "@chakra-ui/core";
 import React from "react";
-import { Box, Image, Heading, Flex, Text, Button } from "@chakra-ui/core";
 import Header from "./Header";
 import Layout from "./Layout";
 
@@ -12,7 +12,7 @@ const Home: React.FC<HomeProps> = ({}) => {
         <Box flexShrink={1}>
           <Header />
         </Box>
-        <Layout h="100%">
+        <Layout h="100%" size="big">
           <Flex alignItems="center" h="100%" pb={20}>
             <Flex flexDirection="column" justify="center">
               <Heading

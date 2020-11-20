@@ -25,7 +25,6 @@ import { InputField } from "./InputField";
 import LoadingSpinner from "./LoadingSpinner";
 import { ExtendedFile } from "./PictureInput";
 import PicturesField from "./PicturesField";
-import ProjectFormTemplate from "./ProjectFormTemplate";
 
 export interface CreateProjectFormProps extends BoxProps {
   setOpen(open: boolean): void;

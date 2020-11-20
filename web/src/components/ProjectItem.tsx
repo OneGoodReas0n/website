@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import {
   RegularTechnologyFragment,
   RegularPictureFragment,
-  Link,
+  LinkObj,
 } from "../generate/graphql";
 import PhotoSlider from "./PhotoSlider";
 import ProjectSection from "./ProjectSection";
@@ -15,7 +15,7 @@ interface ProjectItemProps {
   technologies: RegularTechnologyFragment[];
   description: string;
   pictures: RegularPictureFragment[];
-  link: Link;
+  link: LinkObj;
 }
 
 const ProjectItem: React.FC<ProjectItemProps> = ({

@@ -1,4 +1,4 @@
-export const categoriesName = [
+export const categoriesName: string[] = [
   "backend",
   "frontend",
   "database",
@@ -6,7 +6,7 @@ export const categoriesName = [
   "other",
 ];
 
-export const statusName = ["In develop", "Completed", "Planned"];
+export const statusName: string[] = ["In develop", "Completed", "Planned"];
 
 export const mapCategoryNumByName = (name: string): number => {
   switch (name) {
@@ -45,7 +45,7 @@ export const mapStatusNumByName = (name: string): number | null => {
   }
 };
 
-export const mapStatusByNum = (num: Number): string | null => {
+export const mapStatusByNum = (num: number): string | null => {
   if (statusName[num]) {
     return statusName[num];
   }
