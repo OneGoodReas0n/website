@@ -1,6 +1,22 @@
 import { PictureObj } from "../generate/graphql";
+import { ExtendedFile } from "../components/PictureInput";
 
-export const uploadImages = async (images: File[]): Promise<PictureObj[]> => {
+export const uploadImages = async (
+  files: ExtendedFile[]
+): Promise<PictureObj[]> => {
+  if (files.length > 1) {
+    const originImageIndex = files.findIndex((img) => img.primary === 1);
+    const primaryImg = files[originImageIndex];
+    const restFiles = files
+      .slice(0, originImageIndex)
+      .concat(files.slice(originImageIndex + 1));
+    files = [primaryImg, ...restFiles];
+  }
+
+  const images: File[] = files.map((f) => {
+    let newFile: File = new File(f.blob ? [f.blob] : [""], "filename");
+    return newFile;
+  });
   const pictures: PictureObj[] = [];
   const actions = images.map((pic) => {
     return new Promise(async (resolve) => {
@@ -8,9 +24,7 @@ export const uploadImages = async (images: File[]): Promise<PictureObj[]> => {
       formData.append("file", pic);
       formData.append(
         "upload_preset",
-        process.env.NEXT_PUBLIC_CLOUDINARY_UNSIGNED_UPLOAD
-          ? process.env.NEXT_PUBLIC_CLOUDINARY_UNSIGNED_UPLOAD
-          : ""
+        process.env.NEXT_PUBLIC_CLOUDINARY_UNSIGNED_UPLOAD || ""
       );
       formData.append(
         "options",

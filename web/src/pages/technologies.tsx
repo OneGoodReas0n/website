@@ -1,13 +1,17 @@
-import { Box, Skeleton, Flex } from "@chakra-ui/core";
+import { Box, Flex, Skeleton } from "@chakra-ui/core";
+import { useRouter } from "next/router";
 import React, { useState } from "react";
 import Layout from "../components/Layout";
-import ModalForm from "../components/ModalForm";
-import TechnologyCard from "../components/TechnologyCard";
-import Title from "../components/Title";
-import { useGetTechnologiesQuery, useMeQuery } from "../generate/graphql";
-import { withApollo } from "../utils/withApollo";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { useRouter } from "next/router";
+import ModalForm from "../components/ModalForm";
+import TechnologyItem from "../components/TechnologyItem";
+import Title from "../components/Title";
+import {
+  useGetTechnologiesQuery,
+  useMeQuery,
+  RegularTechnologyFragment,
+} from "../generate/graphql";
+import { withApollo } from "../utils/withApollo";
 
 export interface TechnologiesProps {}
 
@@ -21,15 +25,24 @@ const Technologies: React.FC<TechnologiesProps> = ({}) => {
   const router = useRouter();
 
   const Technologies = (() => {
-    return technologies?.getTechnologies?.map((p) => (
-      <TechnologyCard
-        mr={6}
-        mb={6}
+    return [
+      ...(technologies?.getTechnologies || []),
+      {
+        name: "default",
+        category: -1,
+        iconName: "addIcon",
+      } as RegularTechnologyFragment,
+    ].map((p) => (
+      <TechnologyItem
         key={p.name}
         name={p.name}
-        categoryName={p.category?.name ? p.category?.name : ""}
-        iconName={p.icon?.name ? p.icon?.name : ""}
-        onClick={() => {
+        category={p.category}
+        iconName={p.iconName}
+        handleClick={() => {
+          if (p.name === "default") {
+            setCreateModalOpen(true);
+            return;
+          }
           setEntityId(p.id);
           setUpdateModalOpen(true);
         }}
@@ -79,18 +92,7 @@ const Technologies: React.FC<TechnologiesProps> = ({}) => {
     <Box>
       <Title title="Technologies" />
       <Layout size="middle">
-        <Box mt={12}>
-          {body}
-          <TechnologyCard
-            key="default"
-            name="default"
-            categoryName=""
-            onClick={() => {
-              setCreateModalOpen(true);
-            }}
-            iconName=""
-          />
-        </Box>
+        <Box mt={8}>{body}</Box>
       </Layout>
       <ModalForm
         variant="technology"
