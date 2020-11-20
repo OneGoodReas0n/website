@@ -1,7 +1,8 @@
+import { Box, Button, Flex, FormLabel, Select, Stack } from "@chakra-ui/core";
 import React from "react";
-import { Flex, FormLabel, Select, Stack, Button, Box } from "@chakra-ui/core";
-import { InputField } from "./InputField";
 import { IconColor } from "../utils/iconsMap";
+import { mapCategoryNumByName } from "../utils/mapping";
+import { InputField } from "./InputField";
 
 export interface TechnologyFormTemplateProps {
   values: any;
@@ -45,21 +46,23 @@ const TechnologyFormTemplate: React.FC<TechnologyFormTemplateProps> = ({
           <InputField placeholder="Name" label="Name" name="name" />
         </Box>
         <Box mt={4}>
-          <FormLabel htmlFor="categoryName">Category</FormLabel>
+          <FormLabel htmlFor="category" fontWeight={600}>
+            Category
+          </FormLabel>
           <Select
             placeholder="Select category"
-            name="categoryName"
+            name="category"
             onChange={(e) => {
-              setFieldValue("categoryName", e.target.value);
+              setFieldValue("category", e.target.value);
             }}
             onBlur={() => setFieldTouched("categoryName", true)}
-            value={values.categoryName}
+            value={values.category}
           >
-            <option value="Backend">Backend</option>
-            <option value="Frontend">Frontend</option>
-            <option value="Database">Database</option>
-            <option value="Testing">Testing</option>
-            <option value="Other">Other</option>
+            <option value={mapCategoryNumByName("Backend")!}>Backend</option>
+            <option value={mapCategoryNumByName("Frontend")!}>Frontend</option>
+            <option value={mapCategoryNumByName("Database")!}>Database</option>
+            <option value={mapCategoryNumByName("Testing")!}>Testing</option>
+            <option value={mapCategoryNumByName("Other")!}>Other</option>
           </Select>
         </Box>
         <Box mt={4}>

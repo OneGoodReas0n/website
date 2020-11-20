@@ -1,50 +1,64 @@
-import { BoxProps, Flex } from "@chakra-ui/core";
-import React from "react";
+import { Flex } from "@chakra-ui/core";
+import React, { useState } from "react";
+import {
+  RegularTechnologyFragment,
+  RegularPictureFragment,
+  Link,
+} from "../generate/graphql";
 import PhotoSlider from "./PhotoSlider";
 import ProjectSection from "./ProjectSection";
-import { TechnologyItemProps } from "./TechnologyItem";
+import BigPhotoModal from "./BigPhotoModal";
 
-export interface ProjectItemProps extends BoxProps {
-  projectId: number;
+interface ProjectItemProps {
+  position: number;
   name: string;
-  technologies: TechnologyItemProps[];
+  technologies: RegularTechnologyFragment[];
   description: string;
-  links: string[];
-  img: string;
+  pictures: RegularPictureFragment[];
+  link: Link;
 }
 
 const ProjectItem: React.FC<ProjectItemProps> = ({
   name,
   technologies,
   description,
-  links,
-  img,
-  projectId,
+  pictures,
+  position,
+  link,
 }) => {
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [url, setUrl] = useState("");
   return (
     <>
-      {projectId % 2 === 0 ? (
+      <BigPhotoModal setOpen={setModalOpen} isOpen={isModalOpen} url={url} />
+      {position % 2 === 0 ? (
         <Flex mb="100px" alignItems="center" justifyContent="center">
           <ProjectSection
             name={name}
             description={description}
             technologies={technologies}
-            links={links}
-            img={img}
-            projectId={projectId}
+            link={link}
           />
-          <PhotoSlider w="50%" />
+          <PhotoSlider
+            w="50%"
+            pictures={pictures}
+            setBigModalOpen={setModalOpen}
+            setUrl={setUrl}
+          />
         </Flex>
       ) : (
         <Flex mb="100px" alignItems="center" justifyContent="center">
-          <PhotoSlider w="50%" />
+          <PhotoSlider
+            w="50%"
+            pictures={pictures}
+            setBigModalOpen={setModalOpen}
+            setUrl={setUrl}
+          />
           <ProjectSection
             name={name}
             description={description}
             technologies={technologies}
-            links={links}
-            img={img}
-            projectId={projectId}
+            link={link}
           />
         </Flex>
       )}

@@ -36,7 +36,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         zIndex="2"
         transform="translate(-50%,-50%)"
       >
-        {name ? (
+        {name !== "default" ? (
           <Text color="whitesmoke" fontSize={20} fontWeight={500}>
             {name}
           </Text>

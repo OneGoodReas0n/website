@@ -1,92 +1,38 @@
 import { Box } from "@chakra-ui/core";
 import React from "react";
+import { useGetProjectsQuery } from "../generate/graphql";
+import DataFailed from "./DataFailed";
 import Layout from "./Layout";
-import ProjectItem, { ProjectItemProps } from "./ProjectItem";
+import LoadingSpinner from "./LoadingSpinner";
+import ProjectItem from "./ProjectItem";
 import Title from "./Title";
 
 export interface ProjectsProps {}
 
 const Projects: React.FC<ProjectsProps> = ({}) => {
-  const projectsData: ProjectItemProps[] = [
-    {
-      projectId: 1,
-      name: "Piforum",
-      description: "This is Reddit clone",
-      technologies: [
-        { name: "Typescript", iconName: "typescript", categoryName: "backend" },
-        { name: "Graphql", iconName: "graphql", categoryName: "backend" },
-        { name: "Apollo", iconName: "apollo", categoryName: "backend" },
-        { name: "Postgresql", iconName: "postgresql", categoryName: "backend" },
-        { name: "HTML5", iconName: "html", categoryName: "frontend" },
-        { name: "CSS3", iconName: "css", categoryName: "frontend" },
-        {
-          name: "Typescript-React",
-          iconName: "typescript",
-          categoryName: "frontend",
-        },
-      ],
-      links: ["http://piforum.xyz", "http://piforum.xyz"],
-      img: "https://via.placeholder.com/200",
-    },
-    {
-      projectId: 2,
-      name: "Weather App",
-      description: "This is Weather app",
-      technologies: [
-        { name: "Typescript", iconName: "typescript", categoryName: "backend" },
-        { name: "Graphql", iconName: "graphql", categoryName: "backend" },
-        { name: "Apollo", iconName: "apollo", categoryName: "backend" },
-        { name: "Postgresql", iconName: "postgresql", categoryName: "backend" },
-        { name: "HTML5", iconName: "html", categoryName: "frontend" },
-        { name: "CSS3", iconName: "css", categoryName: "frontend" },
-        {
-          name: "Typescript-React",
-          iconName: "typescript",
-          categoryName: "frontend",
-        },
-      ],
-      links: ["http://piforum.xyz", "http://piforum.xyz"],
-      img: "https://via.placeholder.com/200",
-    },
-    {
-      projectId: 3,
-      name: "Virtual keyboard",
-      description: "This is virtual keyboard app",
-      technologies: [
-        { name: "Typescript", iconName: "typescript", categoryName: "backend" },
-        { name: "Graphql", iconName: "graphql", categoryName: "backend" },
-        { name: "Apollo", iconName: "apollo", categoryName: "backend" },
-        { name: "Postgresql", iconName: "postgresql", categoryName: "backend" },
-        { name: "HTML5", iconName: "html", categoryName: "frontend" },
-        { name: "CSS3", iconName: "css", categoryName: "frontend" },
-        {
-          name: "Typescript-React",
-          iconName: "typescript",
-          categoryName: "frontend",
-        },
-      ],
-      links: ["http://piforum.xyz", "http://piforum.xyz"],
-      img: "https://via.placeholder.com/200",
-    },
-  ];
-
+  const { data, loading } = useGetProjectsQuery();
   const ProjectList = (() => {
     return (
       <>
-        {projectsData.map((p) => (
+        {data?.getProjects.map((p, index) => (
           <ProjectItem
             key={p.name}
             name={p.name}
-            description={p.description}
-            technologies={p.technologies}
-            links={p.links}
-            img={p.img}
-            projectId={p.projectId}
+            description={p.description || ""}
+            technologies={p.technologies || []}
+            pictures={p.pictures || []}
+            position={index}
+            link={p.link}
           />
         ))}
       </>
     );
   })();
+  if (loading) {
+    return <LoadingSpinner />;
+  } else if (!loading && !data) {
+    return <DataFailed />;
+  }
 
   return (
     <Box id="projects">

@@ -5,19 +5,20 @@ import Layout from "./Layout";
 import Slider from "./Slider";
 import TechnologyItem from "./TechnologyItem";
 import Title from "./Title";
+import { categoriesName, mapCategoryNumByName } from "../utils/mapping";
+import TechnologyTag from "./TechnologyTag";
 
 export interface TechnologiesProps {}
 
 const Technologies: React.FC<TechnologiesProps> = ({}) => {
   const { data, loading } = useGetTechnologiesQuery();
-  const categories = ["backend", "frontend", "database", "testing", "other"];
 
   if (loading) {
     return (
       <Box minHeight="500px" id="technologies">
         <Title title="Technologies" />
         <Layout size="middle"></Layout>
-        {categories.map((cat) => {
+        {categoriesName.map((cat) => {
           return (
             <Stack key={cat}>
               <Skeleton>Item</Skeleton>
@@ -39,19 +40,15 @@ const Technologies: React.FC<TechnologiesProps> = ({}) => {
       <Box minHeight="500px" id="technologies">
         <Title title="Technologies" />
         <Layout size="middle">
-          {categories.map((category, index) => {
+          {categoriesName.map((category, index) => {
             const technologiesSection = (() => {
               return data?.getTechnologies
-                .filter((el) => el.category?.name.toLowerCase() === category)
+                .filter((el) => el.category === mapCategoryNumByName(category))
                 .map((tech) => (
-                  <TechnologyItem
+                  <TechnologyTag
                     key={tech.id}
-                    categoryName={
-                      tech.category?.name ? tech.category?.name : ""
-                    }
-                    iconName={tech.icon?.name ? tech.icon?.name : ""}
+                    iconName={tech.iconName ? tech.iconName : ""}
                     name={tech.name}
-                    techId={tech.id}
                     sepia={true}
                   />
                 ));

@@ -41,6 +41,7 @@ const ModalForm: React.FC<ModalFormProps> = ({
           }}
           isOpen={true}
           isCentered
+          scrollBehavior="inside"
         >
           <ModalOverlay style={styles}>
             <SlideFade timeout={150} in={isOpen} unmountOnExit={false}>

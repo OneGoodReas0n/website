@@ -12,7 +12,7 @@ import React, { InputHTMLAttributes, useState } from "react";
 type InputFieldProps = InputHTMLAttributes<HTMLInputElement> &
   InputHTMLAttributes<HTMLTextAreaElement> & {
     name: string;
-    label: string;
+    label?: string;
     variant?: "input" | "textarea" | "datalist";
     secondaryText?: boolean;
     isDisabled?: boolean;
@@ -31,28 +31,27 @@ export const InputField: React.FC<InputFieldProps> = ({
   ...props
 }) => {
   const [field, { error }] = useField(props);
-  const [techIcons, setTechIcons] = useState<string[]>(items || []);
   return (
     <FormControl isInvalid={!!error}>
-      <FormLabel htmlFor={label} fontSize={secondaryText ? 14 : 16}>
-        {label}
-      </FormLabel>
+      {label && (
+        <FormLabel
+          htmlFor={label}
+          fontSize={secondaryText ? 14 : 16}
+          fontWeight={600}
+        >
+          {label}
+        </FormLabel>
+      )}
       {variant === "input" ? (
         <Input {...field} id={field.name} {...props} isDisabled={isDisabled} />
       ) : variant === "textarea" ? (
         <Textarea size="lg" {...field} id={field.name} {...props} />
       ) : (
         <>
-          <Input
-            {...field}
-            id={field.name}
-            {...props}
-            list={listName}
-            onKeyUp={() => {}}
-          />
+          <Input {...field} id={field.name} {...props} list={listName} />
 
           <datalist id={listName}>
-            {techIcons?.sort().map((item) => {
+            {items.sort().map((item) => {
               return (
                 <option value={item} key={item}>
                   {item}

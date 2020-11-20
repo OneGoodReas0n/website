@@ -1,7 +1,13 @@
 import { Flex, Input, Box, Image, BoxProps } from "@chakra-ui/core";
 import { CloseIcon, PlusSquareIcon, CheckIcon } from "@chakra-ui/icons";
-import React, { useState } from "react";
-import { ExtendedFile } from "./UpdateProjectForm";
+import React, { useState, RefObject } from "react";
+
+export interface ExtendedFile extends File {
+  id: number;
+  blob?: string;
+  url?: string;
+  primary?: number;
+}
 
 export interface PictureInputProps extends BoxProps {
   pictures: ExtendedFile[];
@@ -18,11 +24,12 @@ const PictureInput: React.FC<PictureInputProps> = ({
   const [file, setFile] = useState<ExtendedFile>(
     currentFile || ({} as ExtendedFile)
   );
+  const inputRef = React.useRef() as RefObject<HTMLInputElement>;
 
   return (
     <Flex
       position="relative"
-      border={!currentFile?.url ? "3px solid #bbb" : ""}
+      border={!currentFile?.blob ? "3px solid #bbb" : ""}
       w="200px"
       h="100px"
       justifyContent="center"
@@ -34,19 +41,21 @@ const PictureInput: React.FC<PictureInputProps> = ({
         type="file"
         display="none"
         id={`picturesInput`}
+        ref={inputRef}
         onChange={(e) => {
           const { files } = e.target;
           const firstFile: File | undefined | null = files?.item(0);
           if (firstFile) {
-            let url = "";
+            let blob = "";
             const fr = new FileReader();
             fr.readAsDataURL(firstFile);
             fr.onloadend = function (event) {
-              url = event.target?.result as string;
+              blob = event.target?.result as string;
               const extendedFile: ExtendedFile = {
                 ...firstFile,
                 id: Math.floor(Math.random() * Math.floor(100)) + 10,
-                url: url,
+                blob,
+                url: blob,
               };
               setFile(extendedFile);
               setPictures([...pictures, extendedFile]);
@@ -66,9 +75,9 @@ const PictureInput: React.FC<PictureInputProps> = ({
               );
               updatePictures.forEach((element) => {
                 if (element.id !== currentFile?.id) {
-                  element.primary = false;
+                  element.primary = 0;
                 } else {
-                  element.primary = true;
+                  element.primary = 1;
                 }
               });
               setPictures(updatePictures);
@@ -136,8 +145,7 @@ const PictureInput: React.FC<PictureInputProps> = ({
           left="50%"
           transform="translate(-50%,-50%);"
           onClick={() => {
-            const input = document.getElementById(`picturesInput`);
-            input?.click();
+            inputRef.current.click();
           }}
         >
           <PlusSquareIcon color="#bbb" fontSize={32} />

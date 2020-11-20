@@ -1,11 +1,13 @@
 import React from "react";
 import { Tag, TagLabel } from "@chakra-ui/core";
 import { getIconsMap, getColorByIconName } from "../utils/iconsMap";
-import { TechnologyItemProps } from "./TechnologyItem";
 
-export interface TagItemProps {}
+export interface TagItemProps {
+  name: string;
+  iconName: string;
+}
 
-const TagItem: React.FC<TechnologyItemProps> = ({ name, iconName }) => {
+const TagItem: React.FC<TagItemProps> = ({ name, iconName }) => {
   const possibleIcon = getIconsMap().get(iconName);
   const Icon = possibleIcon ? possibleIcon : null;
   const tagColor = getColorByIconName(iconName);

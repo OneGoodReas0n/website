@@ -8,9 +8,10 @@ import {
   TagCloseButton,
   TagLabel,
   useToast,
+  Stack,
 } from "@chakra-ui/core";
 import { Form, Formik } from "formik";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   PictureObj,
   useGetProjectQuery,
@@ -23,12 +24,9 @@ import { InputField } from "./InputField";
 import LoadingSpinner from "./LoadingSpinner";
 import PicturesField from "./PicturesField";
 import { makePictureObjects } from "../utils/makePicturesObjects";
-
-export interface ExtendedFile extends File {
-  id: number;
-  url?: string;
-  primary?: boolean;
-}
+import { ExtendedFile } from "./PictureInput";
+import { mapStatusNumByName, mapStatusByNum } from "../utils/mapping";
+import Alert from "./Alert";
 
 export interface UpdateProjectFormProps {
   setOpen(value: boolean): void;
@@ -41,7 +39,11 @@ const UpdateProjectForm: React.FC<UpdateProjectFormProps> = ({
   ...options
 }) => {
   const toast = useToast();
-  const { data: technologies } = useGetTechnologiesQuery();
+  const [isAlertOpen, setAlertOpen] = useState(false);
+  const {
+    data: technologies,
+    loading: technologiesLoading,
+  } = useGetTechnologiesQuery();
   const [updateProject] = useUpdateProjectMutation();
   const { data: projectData, loading: projectLoading } = useGetProjectQuery({
     variables: { id: projectId },
@@ -54,51 +56,59 @@ const UpdateProjectForm: React.FC<UpdateProjectFormProps> = ({
     technologies: [] as string[],
     pictures: [] as ExtendedFile[],
     pictureUrls: [] as string[],
+    linkSourceCode: "" as string,
+    linkDemo: "" as string,
   });
+  const [addedTechnologies, setAddedTechnologies] = useState<string[]>([]);
+  const [restTechNames, setRestTechNames] = useState<string[]>([]);
 
-  let addedTechnologies: string[] = [];
-  let techNames: string[] = [];
-
-  const createPictureFiles = async () => {
-    const actions: Promise<File>[] =
-      initValues.pictureUrls.map((url, index) => {
-        return new Promise(async (resolve) => {
-          const result = await fetch(url);
-          const blob = await result.blob();
-          const file = new File([blob], `picture${index}`);
-          resolve(file);
-        });
-      }) || [];
-    const files = await Promise.all(actions);
-    const extendedFiles: ExtendedFile[] = files.map((file, index) => {
-      return { ...file, id: index, url: initValues.pictureUrls[index] };
-    });
-    setInitValues((prev) => ({
-      ...prev,
-      pictures: extendedFiles,
-    }));
-  };
-
-  if (projectLoading) {
-    return <LoadingSpinner />;
-  } else if (!projectLoading && projectData) {
-    initValues.pictureUrls =
-      projectData.getProject?.pictures?.map((pic) => pic.url) || [];
-    if (addedTechnologies.length === 0) {
-      addedTechnologies =
-        projectData?.getProject?.technologies?.map((t) => t.name) || [];
-      techNames =
-        technologies?.getTechnologies
-          .filter((tech) => !addedTechnologies.includes(tech.name))
-          .map((tech) => tech.name) || [];
+  useEffect(() => {
+    const initialize = async () => {
+      const values = Object.assign({}, initValues);
+      values.pictureUrls =
+        projectData?.getProject?.pictures?.map((pic) => pic.url) || [];
+      if (addedTechnologies.length === 0) {
+        setAddedTechnologies(
+          projectData?.getProject?.technologies?.map((t) => t.name) || []
+        );
+        setRestTechNames(
+          technologies?.getTechnologies
+            .filter((tech) => !addedTechnologies.includes(tech.name))
+            .map((tech) => tech.name) || []
+        );
+      }
+      values.name = projectData?.getProject?.name || "";
+      values.description = projectData?.getProject?.description || "";
+      values.status = projectData?.getProject?.status || 0;
+      values.technologies =
+        projectData?.getProject?.technologies?.map((tech) => tech.name) || [];
+      values.linkDemo = projectData?.getProject?.link.demo || "";
+      values.linkSourceCode = projectData?.getProject?.link.source_code || "";
+      const actions: Promise<File>[] =
+        values.pictureUrls.map((url, index) => {
+          return new Promise(async (resolve) => {
+            const result = await fetch(url);
+            const blob = await result.blob();
+            const file = new File([blob], `picture${index}`);
+            resolve(file);
+          });
+        }) || [];
+      const files = await Promise.all(actions);
+      const extendedFiles: ExtendedFile[] = files.map((file, index) => {
+        return { ...file, id: index, url: values.pictureUrls[index] };
+      });
+      values.pictures = extendedFiles;
+      setInitValues(values);
+    };
+    if (!projectLoading && projectData) {
+      initialize();
     }
+  }, [projectLoading]);
 
-    initValues.name = projectData.getProject?.name || "";
-    initValues.description = projectData.getProject?.description || "";
-    initValues.status = projectData.getProject?.status || 0;
-    initValues.technologies =
-      projectData.getProject?.technologies?.map((tech) => tech.name) || [];
-    createPictureFiles();
+  if (projectLoading || technologiesLoading) {
+    return <LoadingSpinner />;
+  } else if (!projectLoading && !projectData) {
+    return <Box>Something went wrong with data</Box>;
   }
 
   return (
@@ -113,15 +123,14 @@ const UpdateProjectForm: React.FC<UpdateProjectFormProps> = ({
             variables: {
               input: {
                 name: values.name || "",
-                status:
-                  values.status === 1
-                    ? "In develop"
-                    : values.status === 2
-                    ? "Complete"
-                    : "Planned",
+                status: mapStatusByNum(values.status) || "",
                 description: values.description || "",
                 pictures,
                 technologyNames: values.technologies,
+                link: {
+                  demo: values.linkDemo,
+                  source_code: values.linkSourceCode,
+                },
               },
               id: projectId,
             },
@@ -129,7 +138,7 @@ const UpdateProjectForm: React.FC<UpdateProjectFormProps> = ({
           if (result.data?.updateProject.entity) {
             setOpen(false);
             toast({
-              title: "Project has been created",
+              title: "Project has been updated",
               status: "success",
               duration: 3000,
               isClosable: true,
@@ -152,14 +161,18 @@ const UpdateProjectForm: React.FC<UpdateProjectFormProps> = ({
                   <InputField placeholder="Name" label="Name" name="name" />
                 </Box>
                 <Box mt={4}>
-                  <FormLabel>Pictures {values.pictures.length}</FormLabel>
+                  <FormLabel fontWeight={600}>
+                    Pictures {values.pictures.length}
+                  </FormLabel>
                   <PicturesField
                     setField={setFieldValue}
                     existedPictures={values.pictures}
                   />
                 </Box>
                 <Box mt={4}>
-                  <FormLabel htmlFor="status">Status</FormLabel>
+                  <FormLabel htmlFor="status" fontWeight={600}>
+                    Status
+                  </FormLabel>
                   <Select
                     placeholder="Select status"
                     name="status"
@@ -168,9 +181,15 @@ const UpdateProjectForm: React.FC<UpdateProjectFormProps> = ({
                       setFieldValue("status", e.target.value);
                     }}
                   >
-                    <option value={"In develop"}>In develop</option>
-                    <option value={"Completed"}>Completed</option>
-                    <option value={"Planned"}>Planned</option>
+                    <option value={mapStatusNumByName("In develop")!}>
+                      In develop
+                    </option>
+                    <option value={mapStatusNumByName("Completed")!}>
+                      Completed
+                    </option>
+                    <option value={mapStatusNumByName("Planned")!}>
+                      Planned
+                    </option>
                   </Select>
                 </Box>
                 <Box mt={4}>
@@ -178,17 +197,25 @@ const UpdateProjectForm: React.FC<UpdateProjectFormProps> = ({
                     placeholder="Choose technologies"
                     label="Technologies"
                     name="technologyName"
+                    variant="datalist"
+                    listName="Added technologies"
+                    items={restTechNames}
                     onKeyUp={() => {
                       setFieldValue("technologyName", values.technologyName);
                       setFieldTouched("technologyName", true);
                       if (values.technologyName) {
                         setFieldTouched("technologyName", true);
-                        if (techNames.includes(values.technologyName)) {
-                          techNames = cutElementFromArr(
-                            techNames,
-                            values.technologyName
+                        if (restTechNames.includes(values.technologyName)) {
+                          setRestTechNames(
+                            cutElementFromArr(
+                              restTechNames,
+                              values.technologyName
+                            )
                           );
-                          addedTechnologies.push(values.technologyName);
+                          setAddedTechnologies([
+                            ...addedTechnologies,
+                            values.technologyName,
+                          ]);
                           setFieldValue("technologies", addedTechnologies);
                           setFieldValue("technologyName", "");
                         }
@@ -212,11 +239,10 @@ const UpdateProjectForm: React.FC<UpdateProjectFormProps> = ({
                           name="closeBtn"
                           onClick={() => {
                             const elem = addedTechnologies[index];
-                            addedTechnologies = cutElementFromArr(
-                              addedTechnologies,
-                              index
+                            setAddedTechnologies(
+                              cutElementFromArr(addedTechnologies, index)
                             );
-                            techNames.push(elem);
+                            setRestTechNames([...restTechNames, elem]);
                             setFieldTouched("closeBtn", true);
                           }}
                         />
@@ -233,17 +259,34 @@ const UpdateProjectForm: React.FC<UpdateProjectFormProps> = ({
                     value={values.description || ""}
                   />
                 </Box>
+                <Box mt={4} mb={8}>
+                  <FormLabel fontWeight={600}>Links</FormLabel>
+                  <Stack spacing={2} direction="row" justifyContent="center">
+                    <InputField
+                      placeholder="Demo link..."
+                      name="linkDemo"
+                      variant="input"
+                      value={values.linkDemo}
+                    />
+                    <InputField
+                      placeholder="Source code link..."
+                      name="linkSourceCode"
+                      variant="input"
+                      value={values.linkSourceCode}
+                    />
+                  </Stack>
+                </Box>
               </Flex>
-              <Flex>
+              <Flex justifyContent="space-between">
                 <Button
                   colorScheme="pink"
                   variant="solid"
                   mr={3}
                   onClick={() => {
-                    setOpen(false);
+                    setAlertOpen(true);
                   }}
                 >
-                  Back
+                  Delete
                 </Button>
                 <Button
                   variant="solid"
@@ -258,6 +301,13 @@ const UpdateProjectForm: React.FC<UpdateProjectFormProps> = ({
           </Form>
         )}
       </Formik>
+      <Alert
+        isAlertOpen={isAlertOpen}
+        setAlertOpen={setAlertOpen}
+        entityId={projectId}
+        setUpdateModal={setOpen}
+        entityName="project"
+      />
     </Box>
   );
 };

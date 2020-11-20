@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Box, Flex } from "@chakra-ui/core";
 import PictureInput from "./PictureInput";
-import { ExtendedFile } from "./UpdateProjectForm";
+import { ExtendedFile } from "./PictureInput";
 
 export interface PicturesFieldProps {
   setField: (
@@ -29,26 +29,22 @@ const PicturesField: React.FC<PicturesFieldProps> = ({
 
   useEffect(() => {
     setField("pictures", pictures);
-    console.log("PicturesField Pics: ", pictures);
+    return () => {
+      setField("pictures", null);
+    };
   }, [pictures]);
 
   return (
     <Box overflow={pictures?.length > 1 ? "scroll" : "auto"}>
       <Flex w="fit-content">
-        {pictures.length > 0 &&
-          pictures.map((e) => (
-            <PictureInput
-              key={index++}
-              pictures={pictures}
-              setPictures={setPictures}
-              currentFile={e}
-            />
-          ))}
-        <PictureInput
-          setPictures={setPictures}
-          pictures={pictures}
-          key={index}
-        />
+        {[...pictures, {} as ExtendedFile].map((e) => (
+          <PictureInput
+            key={index++}
+            pictures={pictures}
+            setPictures={setPictures}
+            currentFile={e}
+          />
+        ))}
       </Flex>
     </Box>
   );

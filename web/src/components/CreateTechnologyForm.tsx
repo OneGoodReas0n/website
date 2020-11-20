@@ -1,8 +1,7 @@
 import { Box, BoxProps, useToast } from "@chakra-ui/core";
 import { Form, Formik } from "formik";
-import React, { useState } from "react";
+import React from "react";
 import { useCreateTechnologyMutation } from "../generate/graphql";
-import { categoryColor, IconColor } from "../utils/iconsMap";
 import { errorMap } from "../utils/validation";
 import { withApollo } from "../utils/withApollo";
 import TechnologyFormTemplate from "./TechnologyFormTemplate";
@@ -23,28 +22,20 @@ const CreateTechnologyForm: React.FC<CreateTechnologyFormProps> = ({
       <Formik
         enableReinitialize={false}
         initialValues={{
-          name: "",
-          categoryName: "",
-          categoryColor: "",
-          iconName: "",
+          name: "" as string,
+          category: -1 as number,
+          iconName: "" as string,
         }}
         onSubmit={async (values, { setErrors }) => {
-          values.categoryColor = categoryColor(
-            String(values.categoryName).toLowerCase()
-          );
           const result = await createTechnology({
             variables: {
               input: {
                 name: values.name,
-                icon: values.iconName,
-                category: {
-                  name: values.categoryName,
-                  color: values.categoryColor,
-                },
+                iconName: values.iconName,
+                category: Number(values.category),
               },
             },
             update: (cache) => {
-              console.log("Cache: ", cache);
               cache.evict({ fieldName: "getTechnologies" });
             },
           });

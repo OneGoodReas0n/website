@@ -1,4 +1,4 @@
-import React from "react";
+import React, { RefObject } from "react";
 import {
   Button,
   AlertDialog,
@@ -9,37 +9,66 @@ import {
   AlertDialogFooter,
   useToast,
 } from "@chakra-ui/core";
-import { useDeleteTechnologyMutation } from "../generate/graphql";
+import {
+  useDeleteTechnologyMutation,
+  useDeleteProjectMutation,
+} from "../generate/graphql";
 
 export interface AlertProps {
+  entityName: string;
   entityId: number;
-  isOpen: boolean;
-  setOpen(open: boolean): void;
+  isAlertOpen: boolean;
+  setAlertOpen(open: boolean): void;
   setUpdateModal(open: boolean): void;
 }
 
 const Alert: React.FC<AlertProps> = ({
-  isOpen,
-  setOpen,
+  isAlertOpen,
+  setAlertOpen,
   setUpdateModal,
   entityId,
+  entityName,
 }) => {
-  const cancelRef = React.useRef();
+  const cancelRef = React.useRef() as RefObject<HTMLElement>;
   const [deleteTechnology] = useDeleteTechnologyMutation();
+  const [deleteProject] = useDeleteProjectMutation();
   const toast = useToast();
+
+  const callToast = (status: string) => {
+    if (status === "success") {
+      toast({
+        title: `${entityName[0]
+          .toUpperCase()
+          .concat(entityName.slice(1))} has been deleted`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+        position: "top",
+      });
+      return;
+    }
+    toast({
+      title: "Something went wrong",
+      status: "error",
+      duration: 3000,
+      isClosable: true,
+      position: "top",
+    });
+    return;
+  };
 
   return (
     <AlertDialog
       leastDestructiveRef={cancelRef}
-      isOpen={isOpen}
+      isOpen={isAlertOpen}
       onClose={() => {
-        setOpen(false);
+        setAlertOpen(false);
       }}
     >
       <AlertDialogOverlay>
         <AlertDialogContent>
           <AlertDialogHeader fontSize="lg" fontWeight="bold">
-            Delete Technology
+            Delete {entityName}
           </AlertDialogHeader>
 
           <AlertDialogBody>
@@ -48,8 +77,8 @@ const Alert: React.FC<AlertProps> = ({
 
           <AlertDialogFooter>
             <Button
-              onClick={() => {
-                setOpen(false);
+              onClick={async () => {
+                setAlertOpen(false);
               }}
             >
               Cancel
@@ -57,31 +86,36 @@ const Alert: React.FC<AlertProps> = ({
             <Button
               colorScheme="red"
               onClick={async () => {
-                const result = await deleteTechnology({
-                  variables: { id: entityId },
-                  update: (cache) => {
-                    cache.evict({ fieldName: "getTechnologies" });
-                  },
-                });
-                if (!result.data?.deleteTechnology) {
-                  toast({
-                    title: "Error while deleting technology",
-                    description: "Something went wrong see server logs",
-                    status: "error",
-                    duration: 3000,
-                    position: "top",
-                    isClosable: true,
+                if (entityName === "technology") {
+                  const result = await deleteTechnology({
+                    variables: {
+                      id: entityId,
+                    },
+                    update: (cache) => {
+                      cache.evict({ fieldName: "getTechnologies" });
+                    },
                   });
-                  return;
+                  if (result.data?.deleteTechnology) {
+                    callToast("success");
+                  } else {
+                    callToast("error");
+                  }
+                } else if (entityName === "project") {
+                  const result = await deleteProject({
+                    variables: {
+                      id: entityId,
+                    },
+                    update: (cache) => {
+                      cache.evict({ fieldName: "getProjects" });
+                    },
+                  });
+                  if (result.data?.deleteProject) {
+                    callToast("success");
+                  } else {
+                    callToast("error");
+                  }
                 }
-                toast({
-                  title: "Technology has been deleted",
-                  status: "success",
-                  duration: 3000,
-                  position: "top",
-                  isClosable: true,
-                });
-                setOpen(false);
+                setAlertOpen(false);
                 setUpdateModal(false);
               }}
               ml={3}

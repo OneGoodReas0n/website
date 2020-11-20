@@ -50,18 +50,16 @@ const UpdateTechnologyForm: React.FC<UpdateTechnologyFormProps> = ({
           enableReinitialize={false}
           initialValues={{
             name: data?.getTechnology?.name,
-            categoryName: data?.getTechnology?.category?.name,
-            iconName: data?.getTechnology?.icon?.name,
+            category: data?.getTechnology?.category,
+            iconName: data?.getTechnology?.iconName,
           }}
           onSubmit={async (values, { setErrors }) => {
             const result = await updateTechnology({
               variables: {
                 input: {
-                  name: values.name ? values.name : "",
-                  icon: values.iconName ? values.iconName : "",
-                  category: {
-                    name: values.categoryName ? values.categoryName : "",
-                  },
+                  name: values.name || "",
+                  iconName: values.iconName || "",
+                  category: Number(values.category),
                 },
                 id: entityId,
               },
@@ -101,6 +99,7 @@ const UpdateTechnologyForm: React.FC<UpdateTechnologyFormProps> = ({
           setOpen={setAlertOpen}
           entityId={entityId}
           setUpdateModal={setOpen}
+          entityName="technology"
         />
       </Box>
     );
