@@ -283,6 +283,7 @@ export default class TechnologyResolver {
     if (currentLink) {
       currentLink.demo = link.demo;
       currentLink.source_code = link.source_code;
+      await currentLink.save();
     }
 
     const numStatus =

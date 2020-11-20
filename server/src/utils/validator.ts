@@ -112,7 +112,7 @@ export const errorsMap = (): Map<string, FieldError> => {
     },
     {
       name: Errors.PROJECT_IS_CREATED,
-      field: "error",
+      field: "name",
       message: "Project with such name is already created",
     },
     {
