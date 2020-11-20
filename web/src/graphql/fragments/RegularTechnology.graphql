@@ -1,11 +1,6 @@
 fragment RegularTechnology on Technology {
   id
   name
-  icon {
-    name
-  }
-  category {
-    name
-    color
-  }
+  iconName
+  category
 }

@@ -4,17 +4,13 @@ fragment RegularProject on Project {
   description
   status
   pictures {
-    url
-    primary
+    ...RegularPicture
   }
   technologies {
-    name
-    icon {
-      name
-    }
-    category {
-      name
-      color
-    }
+    ...RegularTechnology
+  }
+  link {
+    demo
+    source_code
   }
 }

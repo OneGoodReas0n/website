@@ -34,36 +34,15 @@ export type QueryGetProjectArgs = {
 export type User = {
   __typename?: 'User';
   id: Scalars['Int'];
-  createdAt: Scalars['String'];
-  updatedAt: Scalars['String'];
   email: Scalars['String'];
 };
 
 export type Technology = {
   __typename?: 'Technology';
   id: Scalars['Int'];
-  createdAt: Scalars['String'];
-  updatedAt: Scalars['String'];
   name: Scalars['String'];
-  icon?: Maybe<Icon>;
-  category?: Maybe<Category>;
-};
-
-export type Icon = {
-  __typename?: 'Icon';
-  id: Scalars['Int'];
-  name: Scalars['String'];
-  createdAt: Scalars['String'];
-  updatedAt: Scalars['String'];
-};
-
-export type Category = {
-  __typename?: 'Category';
-  id: Scalars['Int'];
-  name: Scalars['String'];
-  createdAt: Scalars['String'];
-  updatedAt: Scalars['String'];
-  color?: Maybe<Scalars['String']>;
+  iconName: Scalars['String'];
+  category: Scalars['Float'];
 };
 
 export type Project = {
@@ -76,15 +55,21 @@ export type Project = {
   status: Scalars['Float'];
   pictures?: Maybe<Array<Picture>>;
   technologies?: Maybe<Array<Technology>>;
+  link: ProjectLink;
 };
 
 export type Picture = {
   __typename?: 'Picture';
   id: Scalars['Int'];
   url: Scalars['String'];
-  createdAt: Scalars['String'];
-  updatedAt: Scalars['String'];
   primary?: Maybe<Scalars['Float']>;
+};
+
+export type ProjectLink = {
+  __typename?: 'ProjectLink';
+  id: Scalars['Int'];
+  demo: Scalars['String'];
+  source_code: Scalars['String'];
 };
 
 export type Mutation = {
@@ -168,13 +153,8 @@ export type TechResponse = {
 
 export type TechInput = {
   name: Scalars['String'];
-  category: CategoryInput;
-  icon: Scalars['String'];
-};
-
-export type CategoryInput = {
-  name: Scalars['String'];
-  color?: Maybe<Scalars['String']>;
+  category: Scalars['Float'];
+  iconName: Scalars['String'];
 };
 
 export type ProjectResponse = {
@@ -189,6 +169,7 @@ export type ProjectInput = {
   status: Scalars['String'];
   pictures?: Maybe<Array<PictureObj>>;
   technologyNames?: Maybe<Array<Scalars['String']>>;
+  link: LinkObj;
 };
 
 export type PictureObj = {
@@ -196,9 +177,19 @@ export type PictureObj = {
   primary?: Maybe<Scalars['Float']>;
 };
 
+export type LinkObj = {
+  demo: Scalars['String'];
+  source_code: Scalars['String'];
+};
+
 export type RegularErrorFragment = (
   { __typename?: 'FieldError' }
   & Pick<FieldError, 'name' | 'field' | 'message'>
+);
+
+export type RegularPictureFragment = (
+  { __typename?: 'Picture' }
+  & Pick<Picture, 'id' | 'url' | 'primary'>
 );
 
 export type RegularProjectFragment = (
@@ -206,30 +197,19 @@ export type RegularProjectFragment = (
   & Pick<Project, 'id' | 'name' | 'description' | 'status'>
   & { pictures?: Maybe<Array<(
     { __typename?: 'Picture' }
-    & Pick<Picture, 'url' | 'primary'>
+    & RegularPictureFragment
   )>>, technologies?: Maybe<Array<(
     { __typename?: 'Technology' }
-    & Pick<Technology, 'name'>
-    & { icon?: Maybe<(
-      { __typename?: 'Icon' }
-      & Pick<Icon, 'name'>
-    )>, category?: Maybe<(
-      { __typename?: 'Category' }
-      & Pick<Category, 'name' | 'color'>
-    )> }
-  )>> }
+    & RegularTechnologyFragment
+  )>>, link: (
+    { __typename?: 'ProjectLink' }
+    & Pick<ProjectLink, 'demo' | 'source_code'>
+  ) }
 );
 
 export type RegularTechnologyFragment = (
   { __typename?: 'Technology' }
-  & Pick<Technology, 'id' | 'name'>
-  & { icon?: Maybe<(
-    { __typename?: 'Icon' }
-    & Pick<Icon, 'name'>
-  )>, category?: Maybe<(
-    { __typename?: 'Category' }
-    & Pick<Category, 'name' | 'color'>
-  )> }
+  & Pick<Technology, 'id' | 'name' | 'iconName' | 'category'>
 );
 
 export type CreateProjectMutationVariables = Exact<{
@@ -455,6 +435,21 @@ export const RegularErrorFragmentDoc = gql`
   message
 }
     `;
+export const RegularPictureFragmentDoc = gql`
+    fragment RegularPicture on Picture {
+  id
+  url
+  primary
+}
+    `;
+export const RegularTechnologyFragmentDoc = gql`
+    fragment RegularTechnology on Technology {
+  id
+  name
+  iconName
+  category
+}
+    `;
 export const RegularProjectFragmentDoc = gql`
     fragment RegularProject on Project {
   id
@@ -462,34 +457,18 @@ export const RegularProjectFragmentDoc = gql`
   description
   status
   pictures {
-    url
-    primary
+    ...RegularPicture
   }
   technologies {
-    name
-    icon {
-      name
-    }
-    category {
-      name
-      color
-    }
+    ...RegularTechnology
+  }
+  link {
+    demo
+    source_code
   }
 }
-    `;
-export const RegularTechnologyFragmentDoc = gql`
-    fragment RegularTechnology on Technology {
-  id
-  name
-  icon {
-    name
-  }
-  category {
-    name
-    color
-  }
-}
-    `;
+    ${RegularPictureFragmentDoc}
+${RegularTechnologyFragmentDoc}`;
 export const CreateProjectDocument = gql`
     mutation CreateProject($input: ProjectInput!) {
   createProject(input: $input) {
