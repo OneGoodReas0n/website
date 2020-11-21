@@ -21,11 +21,6 @@ export interface LoginInput {
   password: string;
 }
 
-export interface LoginError {
-  field: string;
-  message: string;
-}
-
 const Login: React.FC = ({}) => {
   const router = useRouter();
   const [login] = useLoginMutation();

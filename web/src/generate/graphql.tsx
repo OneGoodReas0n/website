@@ -83,6 +83,7 @@ export type Mutation = {
   createProject: ProjectResponse;
   updateProject: ProjectResponse;
   deleteProject: Scalars['Boolean'];
+  message: Scalars['Float'];
 };
 
 
@@ -125,6 +126,11 @@ export type MutationUpdateProjectArgs = {
 
 export type MutationDeleteProjectArgs = {
   id: Scalars['Float'];
+};
+
+
+export type MutationMessageArgs = {
+  input: Message;
 };
 
 export type UserResponse = {
@@ -180,6 +186,12 @@ export type PictureObj = {
 export type LinkObj = {
   demo: Scalars['String'];
   source_code: Scalars['String'];
+};
+
+export type Message = {
+  email: Scalars['String'];
+  title: Scalars['String'];
+  message: Scalars['String'];
 };
 
 export type RegularErrorFragment = (
@@ -316,6 +328,18 @@ export type RegisterMutation = (
       & Pick<User, 'email'>
     )> }
   ) }
+);
+
+export type SendMessageMutationVariables = Exact<{
+  email: Scalars['String'];
+  title: Scalars['String'];
+  message: Scalars['String'];
+}>;
+
+
+export type SendMessageMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'message'>
 );
 
 export type UpdateProjectMutationVariables = Exact<{
@@ -712,6 +736,38 @@ export function useRegisterMutation(baseOptions?: Apollo.MutationHookOptions<Reg
 export type RegisterMutationHookResult = ReturnType<typeof useRegisterMutation>;
 export type RegisterMutationResult = Apollo.MutationResult<RegisterMutation>;
 export type RegisterMutationOptions = Apollo.BaseMutationOptions<RegisterMutation, RegisterMutationVariables>;
+export const SendMessageDocument = gql`
+    mutation SendMessage($email: String!, $title: String!, $message: String!) {
+  message(input: {email: $email, title: $title, message: $message})
+}
+    `;
+export type SendMessageMutationFn = Apollo.MutationFunction<SendMessageMutation, SendMessageMutationVariables>;
+
+/**
+ * __useSendMessageMutation__
+ *
+ * To run a mutation, you first call `useSendMessageMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSendMessageMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [sendMessageMutation, { data, loading, error }] = useSendMessageMutation({
+ *   variables: {
+ *      email: // value for 'email'
+ *      title: // value for 'title'
+ *      message: // value for 'message'
+ *   },
+ * });
+ */
+export function useSendMessageMutation(baseOptions?: Apollo.MutationHookOptions<SendMessageMutation, SendMessageMutationVariables>) {
+        return Apollo.useMutation<SendMessageMutation, SendMessageMutationVariables>(SendMessageDocument, baseOptions);
+      }
+export type SendMessageMutationHookResult = ReturnType<typeof useSendMessageMutation>;
+export type SendMessageMutationResult = Apollo.MutationResult<SendMessageMutation>;
+export type SendMessageMutationOptions = Apollo.BaseMutationOptions<SendMessageMutation, SendMessageMutationVariables>;
 export const UpdateProjectDocument = gql`
     mutation UpdateProject($id: Float!, $input: ProjectInput!) {
   updateProject(id: $id, input: $input) {
