@@ -33,6 +33,7 @@
     "ioredis": "^4.17.3",
     "nodemon": "^2.0.4",
     "reflect-metadata": "^0.1.13",
+    "telegraf": "^3.38.0",
     "ts-node": "^9.0.0",
     "type-graphql": "^1.0.0",
     "typeorm": "^0.2.26",
