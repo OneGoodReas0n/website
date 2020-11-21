@@ -1,7 +1,7 @@
 import { Box, Button, Flex, FormLabel, Select, Stack } from "@chakra-ui/core";
 import React from "react";
 import { IconColor } from "../utils/iconsMap";
-import { mapCategoryNumByName } from "../utils/mapping";
+import { mapCategoryNumByName, categoryNames } from "../utils/mapping";
 import { InputField } from "./InputField";
 
 export interface TechnologyFormTemplateProps {
@@ -58,11 +58,14 @@ const TechnologyFormTemplate: React.FC<TechnologyFormTemplateProps> = ({
             onBlur={() => setFieldTouched("categoryName", true)}
             value={values.category}
           >
-            <option value={mapCategoryNumByName("Backend")!}>Backend</option>
-            <option value={mapCategoryNumByName("Frontend")!}>Frontend</option>
-            <option value={mapCategoryNumByName("Database")!}>Database</option>
-            <option value={mapCategoryNumByName("Testing")!}>Testing</option>
-            <option value={mapCategoryNumByName("Other")!}>Other</option>
+            {categoryNames.map((name) => (
+              <option
+                value={mapCategoryNumByName(name, categoryNames)}
+                key={name}
+              >
+                {name}
+              </option>
+            ))}
           </Select>
         </Box>
         <Box mt={4}>

@@ -1,14 +1,12 @@
 import React from "react";
 import { Heading } from "@chakra-ui/core";
 
-export interface TitleProps {
-  title: string;
-}
+export interface TitleProps {}
 
-const Title: React.FC<TitleProps> = ({ title }) => {
+const Title: React.FC<TitleProps> = ({ children }) => {
   return (
-    <Heading mt={16} textAlign="center">
-      {title}
+    <Heading mt={20} textAlign="center">
+      {children}
     </Heading>
   );
 };

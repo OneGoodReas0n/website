@@ -1,16 +1,15 @@
-import { Box, Flex, Heading } from "@chakra-ui/core";
+import { Box, Flex } from "@chakra-ui/core";
 import React from "react";
 import Layout from "./Layout";
 import TextSnippet from "./TextSnippet";
+import Title from "./Title";
 
 export interface AboutProps {}
 
 const About: React.FC<AboutProps> = ({}) => {
   return (
-    <Box minHeight="500px" id="about">
-      <Heading mt={6} textAlign="center">
-        About
-      </Heading>
+    <Box id="about">
+      <Title>About</Title>
       <Layout size="middle">
         <Flex mt={6} flexDirection="column">
           <TextSnippet text="My name is Illia Korobov, currently living in Ilmenau, Germany. I have a Bachelor and Master deegrees in Sybersecurity from Oles Gonchar National University and my primary focus and inspiration for my studies is Web Development. I started programming since I was 19 and I tried lots of languages (PHP, Java, C++, Javascript) and technologies (Laravel,Spring Boot, React, Typescript, Graphql and other). Now i am studying Computer Engeneering at Technical University Ilmenau and I really like to solve complex tasks and create some gorgeous and interactive websites." />

@@ -36,7 +36,7 @@ const Projects: React.FC<ProjectsProps> = ({}) => {
 
   return (
     <Box id="projects">
-      <Title title="Projects" />
+      <Title>Projects</Title>
       <Layout size="middle" mt={12}>
         {ProjectList}
       </Layout>
