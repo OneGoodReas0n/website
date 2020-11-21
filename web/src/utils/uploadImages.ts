@@ -50,7 +50,10 @@ export const uploadImages = async (
   });
   const picturesFromDb = await Promise.all(actions);
   picturesFromDb.forEach((pic: any, index) => {
-    pictures.push({ url: pic.url, primary: index === 0 ? 1 : 0 });
+    pictures.push({
+      url: String(pic.url).replace("http", "https"),
+      primary: index === 0 ? 1 : 0,
+    });
   });
   return pictures;
 };

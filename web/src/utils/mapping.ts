@@ -1,33 +1,29 @@
-export const categoriesName: string[] = [
-  "backend",
-  "frontend",
-  "database",
-  "test",
-  "other",
+export const categoryNames: string[] = [
+  "Backend",
+  "Frontend",
+  "Database",
+  "Test",
+  "Other",
 ];
 
 export const statusName: string[] = ["In develop", "Completed", "Planned"];
 
-export const mapCategoryNumByName = (name: string): number => {
-  switch (name) {
-    case categoriesName[0]:
-      return 0;
-    case categoriesName[1]:
-      return 1;
-    case categoriesName[2]:
-      return 2;
-    case categoriesName[3]:
-      return 3;
-    case categoriesName[4]:
-      return 4;
-    default:
-      return -1;
+export const mapCategoryNumByName = (
+  name: string,
+  categories: string[]
+): number => {
+  if (categories.indexOf(name) !== undefined) {
+    return categories.indexOf(name);
   }
+  return -1;
 };
 
-export const mapCategoryNameByNum = (num: number): string | null => {
-  if (categoriesName[num]) {
-    return categoriesName[num];
+export const mapCategoryNameByNum = (
+  num: number,
+  categories: string[]
+): string | null => {
+  if (categories[num]) {
+    return categories[num];
   }
   return null;
 };
