@@ -5,12 +5,14 @@ import { createBreakpoints } from "@chakra-ui/theme-tools";
 import "../public/css/global.scss";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { Breakpoints } from "../utils/breakpoints";
 
 const breakpoints = createBreakpoints({
-  sm: "320px",
-  md: "768px",
-  lg: "960px",
-  xl: "1200px",
+  base: `${Breakpoints.base}px`,
+  sm: `${Breakpoints.sm}px`,
+  md: `${Breakpoints.md}px`,
+  lg: `${Breakpoints.lg}px`,
+  xl: `${Breakpoints.xl}px`,
 });
 
 const theme = extendTheme({ breakpoints });

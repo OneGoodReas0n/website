@@ -23,7 +23,7 @@ const Slider: React.FC<SliderProps> = ({
     pauseOnHover: true,
   };
   return (
-    <Box mt={12}>
+    <Box mt={{ base: 4, sm: 6, md: 8, lg: 12 }}>
       <SliderItem {...sliderProps}>{children}</SliderItem>
     </Box>
   );

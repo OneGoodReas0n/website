@@ -7,7 +7,11 @@ export interface TextSnippetProps {
 
 const TextSnippet: React.FC<TextSnippetProps> = ({ text }) => {
   return (
-    <Text letterSpacing={1} mt={8}>
+    <Text
+      letterSpacing={1}
+      mt={{ base: 2, sm: 4 }}
+      fontSize={{ base: 14, sm: 16, md: 16 }}
+    >
       {text}
     </Text>
   );

@@ -10,26 +10,27 @@ export interface HeaderProps {}
 const Header: React.FC<HeaderProps> = ({}) => {
   const { isOpen, onToggle } = useDisclosure();
   return (
-    <Box py={{ base: "1rem", sm: "1rem", md: "3rem" }}>
+    <Box py={{ base: 2, sm: 4, md: 8 }}>
       <Flex
+        display={{ base: "none", sm: "flex" }}
         justifyContent="space-between"
         alignItems="center"
-        display={{ base: "none", sm: "none", md: "block" }}
+        width="100%"
       >
         <Nav />
         <Socials />
       </Flex>
-      <CollapseButton
-        isOpen={isOpen}
-        onClick={() => {
-          onToggle();
-        }}
-      />
-      <Collapse isOpen={isOpen}>
-        <Stack spacing={8} align="stretch" direction="column">
+      <Box display={{ base: "block", sm: "none" }} w="100%">
+        <CollapseButton
+          isOpen={isOpen}
+          onClick={() => {
+            onToggle();
+          }}
+        />
+        <Collapse isOpen={isOpen}>
           <Nav />
-        </Stack>
-      </Collapse>
+        </Collapse>
+      </Box>
     </Box>
   );
 };

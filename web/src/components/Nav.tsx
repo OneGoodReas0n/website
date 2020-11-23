@@ -25,7 +25,7 @@ const Nav: React.FC<NavProps> = ({}) => {
             color="whitesmoke"
             fontFamily="Ubuntu"
             fontWeight={300}
-            fontSize={20}
+            fontSize={{ base: 16, md: 20 }}
           >
             {l.name}
           </Link>
@@ -36,9 +36,11 @@ const Nav: React.FC<NavProps> = ({}) => {
 
   return (
     <Stack
-      spacing={{ base: "0.5rem", md: "4rem" }}
-      direction={{ base: "column", md: "row" }}
+      spacing={{ base: 2, md: 6 }}
+      direction={{ base: "column", sm: "row" }}
       alignItems="center"
+      justifyContent="center"
+      mb={{ base: 2, sm: 0 }}
     >
       {Links}
     </Stack>

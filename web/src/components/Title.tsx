@@ -5,7 +5,7 @@ export interface TitleProps {}
 
 const Title: React.FC<TitleProps> = ({ children }) => {
   return (
-    <Heading mt={20} textAlign="center">
+    <Heading mt={{ base: 8, md: 10, lg: 12 }} textAlign="center">
       {children}
     </Heading>
   );

@@ -1,7 +1,9 @@
 import React from "react";
-import { Box, Stack, Image, Link, Flex } from "@chakra-ui/core";
+import { Stack, Image, Link, Flex } from "@chakra-ui/core";
 
-export interface SocialsProps {}
+export interface SocialsProps {
+  variant?: "normal" | "wide";
+}
 
 type SocialItem = {
   id: number;
@@ -11,7 +13,7 @@ type SocialItem = {
   link: string;
 };
 
-const Socials: React.FC<SocialsProps> = ({}) => {
+const Socials: React.FC<SocialsProps> = ({ variant }) => {
   const socialList: SocialItem[] = [
     {
       id: 1,
@@ -43,15 +45,21 @@ const Socials: React.FC<SocialsProps> = ({}) => {
     return socialList.map((s) => {
       return (
         <Link href={s.link} key={s.id}>
-          <Image w="30px" h="30px" objectFit="cover" src={s.src} alt={s.name} />
+          <Image
+            w={{ base: "24px", md: "30px" }}
+            h={{ base: "24px", md: "30px" }}
+            objectFit="cover"
+            src={s.src}
+            alt={s.name}
+          />
         </Link>
       );
     });
   })();
 
   return (
-    <Flex justifyContent="center">
-      <Stack spacing={4} direction="row">
+    <Flex justifyContent={variant === "wide" ? "center" : ""}>
+      <Stack spacing={variant === "wide" ? 8 : 4} direction="row">
         {Socials}
       </Stack>
     </Flex>

@@ -1,12 +1,4 @@
-import {
-  Box,
-  Button,
-  Flex,
-  Heading,
-  Image,
-  Text,
-  Stack,
-} from "@chakra-ui/core";
+import { Box, Flex, Heading, Image, Text, Stack } from "@chakra-ui/core";
 import React, { useState } from "react";
 import Header from "./Header";
 import Layout from "./Layout";
@@ -18,17 +10,13 @@ export interface HomeProps {}
 const Home: React.FC<HomeProps> = ({}) => {
   const [isOpen, setOpen] = useState(false);
   return (
-    <Box h={{ base: "500px", sm: "500px", md: "760px" }} position="relative">
-      <Flex
-        px={{ base: "1rem", sm: "1rem", md: "2rem" }}
-        flexDirection="column"
-        h="100%"
-      >
+    <Box position="relative" h={{ base: "400px", md: "56vw", lg: "48vw" }}>
+      <Flex px={{ base: 4, md: 8 }} flexDirection="column" h="100%">
         <Box flexShrink={1}>
           <Header />
         </Box>
         <Layout h="100%">
-          <Flex alignItems="center" h="100%" pb={20}>
+          <Flex alignItems="center" h="100%">
             <Flex flexDirection="column" justify="center">
               <Heading
                 letterSpacing={1}
@@ -42,7 +30,7 @@ const Home: React.FC<HomeProps> = ({}) => {
               <Text
                 letterSpacing={2}
                 color="whitesmoke"
-                fontSize={{ base: "16px", sm: "20px", md: "28px", xl: "36px" }}
+                fontSize={{ base: "16px", sm: "20px", md: "24px", xl: "36px" }}
                 fontFamily="Ubuntu"
                 fontWeight={300}
                 pt={3}
@@ -50,8 +38,8 @@ const Home: React.FC<HomeProps> = ({}) => {
                 I am Fullstack Javascript Developer
               </Text>
               <Stack
-                mt={10}
-                direction={{ base: "column", sm: "column", md: "row" }}
+                mt={{ base: 4, sm: 6, md: 8, lg: 10 }}
+                direction={{ base: "column", sm: "row", md: "row" }}
                 spacing={4}
                 align="stretch"
               >
@@ -70,6 +58,7 @@ const Home: React.FC<HomeProps> = ({}) => {
         </Layout>
       </Flex>
       <Image
+        w="100%"
         height="100%"
         objectFit="cover"
         zIndex={-1}

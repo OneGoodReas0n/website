@@ -6,9 +6,10 @@ export interface LayoutProps extends BoxProps {}
 const Layout: React.FC<LayoutProps> = ({ children, ...options }) => {
   return (
     <Box
-      width={{ base: "100%", sm: "90%", md: "60%" }}
+      width={{ base: "100%", sm: "95%", lg: "75%" }}
       mx="auto"
       id="Layout"
+      overflow="hidden"
       {...options}
     >
       {children}

@@ -5,6 +5,7 @@ import Home from "../components/Home";
 import Projects from "../components/Projects";
 import Technologies from "../components/Technologies";
 import { withApollo } from "../utils/withApollo";
+import Footer from "../components/Footer";
 
 const Index: React.FC = () => {
   return (
@@ -13,6 +14,7 @@ const Index: React.FC = () => {
       <About />
       <Technologies />
       <Projects />
+      <Footer />
     </Box>
   );
 };
