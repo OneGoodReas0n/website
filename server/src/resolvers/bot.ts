@@ -1,4 +1,4 @@
-import { Resolver, InputType, Field, Mutation, Arg, Query } from "type-graphql";
+import { Resolver, InputType, Field, Mutation, Arg } from "type-graphql";
 import Telegraf from "telegraf";
 
 const bot = new Telegraf(process.env.BOT_TOKEN || "");
