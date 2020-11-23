@@ -6,15 +6,9 @@ import BigPhotoModal from "./BigPhotoModal";
 
 export interface PhotoSliderProps extends BoxProps {
   pictures: RegularPictureFragment[];
-
-  setUrl(url: string): void;
 }
 
-const PhotoSlider: React.FC<PhotoSliderProps> = ({
-  pictures,
-  setUrl,
-  ...props
-}) => {
+const PhotoSlider: React.FC<PhotoSliderProps> = ({ pictures, ...props }) => {
   const [isBigPictureOpen, setBigPictureOpen] = useState(false);
   const [pictureUrl, setPictureUrl] = useState<string>("");
   const settings: Settings = {
