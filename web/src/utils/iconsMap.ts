@@ -35,7 +35,7 @@ export enum IconColor {
   "html" = "#E34F26",
   "css" = "#1572B6",
   "sass" = "#CC6699",
-  "vanillajs" = "#F7DF1E",
+  "vanillajs" = "#D9C21A",
   "postgresql" = "#336791",
   "mysql" = "#4479A1",
   "mongodb" = "#47A248",
