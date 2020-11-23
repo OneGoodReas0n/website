@@ -1,15 +1,14 @@
 import React from "react";
 import { Box, BoxProps } from "@chakra-ui/core";
 
-export interface LayoutProps extends BoxProps {
-  size: "small" | "middle" | "big";
-}
+export interface LayoutProps extends BoxProps {}
 
-const Layout: React.FC<LayoutProps> = ({ children, size, ...options }) => {
+const Layout: React.FC<LayoutProps> = ({ children, ...options }) => {
   return (
     <Box
-      w={size === "small" ? "400px" : size === "middle" ? "800px" : "1200px"}
+      width={{ base: "100%", sm: "90%", md: "60%" }}
       mx="auto"
+      id="Layout"
       {...options}
     >
       {children}

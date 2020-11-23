@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Link } from "@chakra-ui/core";
+import { Link, Stack } from "@chakra-ui/core";
 import NextLink from "next/link";
 
 export interface NavProps {}
@@ -22,7 +22,6 @@ const Nav: React.FC<NavProps> = ({}) => {
       return (
         <NextLink href={`#${l.name.toLowerCase()}`} key={l.id}>
           <Link
-            mr={4}
             color="whitesmoke"
             fontFamily="Ubuntu"
             fontWeight={300}
@@ -35,7 +34,15 @@ const Nav: React.FC<NavProps> = ({}) => {
     });
   })();
 
-  return <Box>{Links}</Box>;
+  return (
+    <Stack
+      spacing={{ base: "0.5rem", md: "4rem" }}
+      direction={{ base: "column", md: "row" }}
+      alignItems="center"
+    >
+      {Links}
+    </Stack>
+  );
 };
 
 export default Nav;

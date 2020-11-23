@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Flex, Image, Link } from "@chakra-ui/core";
+import { Box, Stack, Image, Link, Flex } from "@chakra-ui/core";
 
 export interface SocialsProps {}
 
@@ -42,7 +42,7 @@ const Socials: React.FC<SocialsProps> = ({}) => {
   const Socials = (() => {
     return socialList.map((s) => {
       return (
-        <Link href={s.link} ml={4} key={s.id}>
+        <Link href={s.link} key={s.id}>
           <Image w="30px" h="30px" objectFit="cover" src={s.src} alt={s.name} />
         </Link>
       );
@@ -50,9 +50,11 @@ const Socials: React.FC<SocialsProps> = ({}) => {
   })();
 
   return (
-    <Box>
-      <Flex>{Socials}</Flex>
-    </Box>
+    <Flex justifyContent="center">
+      <Stack spacing={4} direction="row">
+        {Socials}
+      </Stack>
+    </Flex>
   );
 };
 
