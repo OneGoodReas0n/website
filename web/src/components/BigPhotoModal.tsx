@@ -1,12 +1,14 @@
-import React from "react";
 import {
+  Fade,
   Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalCloseButton,
   ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalOverlay,
   Image,
 } from "@chakra-ui/core";
+import { SlideFade } from "@chakra-ui/transition";
+import React from "react";
 
 export interface BigPhotoModalProps {
   url: string;
@@ -20,20 +22,32 @@ const BigPhotoModal: React.FC<BigPhotoModalProps> = ({
   url,
 }) => {
   return (
-    <Modal
-      blockScrollOnMount={false}
-      isOpen={isOpen}
-      onClose={() => setOpen(false)}
-      isCentered
-    >
-      <ModalOverlay />
-      <ModalContent>
-        <ModalCloseButton />
-        <ModalBody>
-          <Image src={url} />
-        </ModalBody>
-      </ModalContent>
-    </Modal>
+    <Fade timeout={300} in={isOpen}>
+      {(styles) => (
+        <Modal
+          id="bigPhotoModal"
+          size="full"
+          onClose={() => {
+            setOpen(false);
+          }}
+          isOpen={true}
+          isCentered
+        >
+          <ModalOverlay style={styles}>
+            <SlideFade timeout={150} in={isOpen} unmountOnExit={false}>
+              {(styles) => (
+                <ModalContent style={styles}>
+                  <ModalCloseButton onClick={() => setOpen(false)} />
+                  <ModalBody>
+                    <Image src={url} borderRadius={8} />
+                  </ModalBody>
+                </ModalContent>
+              )}
+            </SlideFade>
+          </ModalOverlay>
+        </Modal>
+      )}
+    </Fade>
   );
 };
 

@@ -90,7 +90,7 @@ const Technologies: React.FC<TechnologiesProps> = ({}) => {
   }
   return (
     <Box>
-      <Title title="Technologies" />
+      <Title>Technologies</Title>
       <Layout size="middle">
         <Box mt={8}>{body}</Box>
       </Layout>

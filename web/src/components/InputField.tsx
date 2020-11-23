@@ -8,9 +8,8 @@ import {
 import { useField } from "formik";
 import React, { InputHTMLAttributes } from "react";
 
-type InputFieldProps = InputHTMLAttributes<HTMLInputElement> &
-  InputHTMLAttributes<HTMLTextAreaElement> &
-  BoxProps & {
+type InputFieldProps = InputHTMLAttributes<HTMLDivElement> &
+  InputHTMLAttributes<HTMLTextAreaElement> & {
     name: string;
     label?: string;
     variant?: "input" | "textarea" | "datalist";
@@ -51,7 +50,7 @@ export const InputField: React.FC<InputFieldProps> = ({
           <Input {...field} id={field.name} {...props} list={listName} />
 
           <datalist id={listName}>
-            {items.sort().map((item) => {
+            {items?.sort().map((item) => {
               return (
                 <option value={item} key={item}>
                   {item}

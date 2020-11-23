@@ -15,15 +15,7 @@ const Projects: React.FC<ProjectsProps> = ({}) => {
     return (
       <>
         {data?.getProjects.map((p, index) => (
-          <ProjectItem
-            key={p.name}
-            name={p.name}
-            description={p.description || ""}
-            technologies={p.technologies || []}
-            pictures={p.pictures || []}
-            position={index}
-            link={p.link}
-          />
+          <ProjectItem key={p.name} project={p} position={index} />
         ))}
       </>
     );

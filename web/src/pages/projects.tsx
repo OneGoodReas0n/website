@@ -48,7 +48,7 @@ const Projects: React.FC<ProjectsProps> = ({}) => {
   }
   return (
     <Box>
-      <Title title="Projects" />
+      <Title>Projects</Title>
       <Layout size="middle">
         <Flex mt={6}>{body}</Flex>
       </Layout>

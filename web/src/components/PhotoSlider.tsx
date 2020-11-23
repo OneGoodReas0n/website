@@ -1,20 +1,22 @@
 import { Box, BoxProps, Image, Link } from "@chakra-ui/core";
-import React from "react";
+import React, { useState } from "react";
 import Slider, { Settings } from "react-slick";
 import { RegularPictureFragment } from "../generate/graphql";
+import BigPhotoModal from "./BigPhotoModal";
 
 export interface PhotoSliderProps extends BoxProps {
   pictures: RegularPictureFragment[];
-  setBigModalOpen(state: boolean): void;
+
   setUrl(url: string): void;
 }
 
 const PhotoSlider: React.FC<PhotoSliderProps> = ({
   pictures,
-  setBigModalOpen,
   setUrl,
   ...props
 }) => {
+  const [isBigPictureOpen, setBigPictureOpen] = useState(false);
+  const [pictureUrl, setPictureUrl] = useState<string>("");
   const settings: Settings = {
     customPaging: function (i) {
       return (
@@ -38,7 +40,15 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({
   const Pictures = (() => {
     return pictures.map((pic) => {
       return (
-        <Box className="picture" as="button" key={pic.id}>
+        <Box
+          className="picture"
+          as="button"
+          key={pic.id}
+          onClick={() => {
+            setPictureUrl(pic.url);
+            setBigPictureOpen(true);
+          }}
+        >
           <Image src={pic.url} mx="auto" />
         </Box>
       );
@@ -52,6 +62,11 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({
           {Pictures}
         </Slider>
       </Box>
+      <BigPhotoModal
+        isOpen={isBigPictureOpen}
+        setOpen={setBigPictureOpen}
+        url={pictureUrl}
+      />
     </>
   );
 };

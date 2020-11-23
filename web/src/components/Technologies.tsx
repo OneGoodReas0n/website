@@ -15,7 +15,7 @@ const Technologies: React.FC<TechnologiesProps> = ({}) => {
   if (loading) {
     return (
       <Box minHeight="500px" id="technologies">
-        <Title title="Technologies" />
+        <Title>Technologies</Title>
         <Layout size="middle"></Layout>
         {categoryNames.map((cat) => {
           return (
